@@ -2,9 +2,9 @@
 // Online: immer zuerst die neueste Version vom Server holen.
 // Offline: gespeicherte Version verwenden.
 // Bei Änderungen VERSION erhöhen.
-const VERSION = 'v5';
+const VERSION = 'v6';
 const CACHE = 'bogen-timer-' + VERSION;
-const FILES = ['./', './index.html', './manifest.webmanifest', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png'];
+const FILES = ['./', './index.html', './manifest.webmanifest', './version.json', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(

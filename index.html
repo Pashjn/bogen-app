@@ -66,6 +66,7 @@
   .btn-so { display: block; width: 100%; margin-top: 10px; padding: 16px; border-radius: 16px; background: var(--accent); color: #111; font-size: 19px; font-weight: 700; }
   .btn-so:active { filter: brightness(1.08); }
   .btn-ghost { display: block; width: 100%; margin-top: 10px; padding: 14px; border-radius: 14px; background: var(--card); font-size: 16px; font-weight: 600; }
+  .update-note { position: fixed; left: 16px; right: 16px; bottom: calc(var(--safe-b) + 16px); padding: 14px; border-radius: 14px; background: var(--accent); color: #111; font-weight: 700; text-align: center; z-index: 10; }
   .tip { color: var(--muted); font-size: 13px; line-height: 1.5; margin: 18px 4px 0; }
 
   /* ---------- Timer ---------- */
@@ -170,7 +171,8 @@
     Der Bildschirm bleibt während der Runde an. Lautstärke mit den iPhone-Tasten regeln.
     Funktioniert komplett ohne Internet.
   </p>
-  <p class="tip" style="opacity:.6">Version 5</p>
+  <p class="tip" style="opacity:.6" id="versionLabel">Version 6</p>
+  <div id="updateNote" class="update-note hidden">Neue Version wird geladen …</div>
 </main>
 
 <!-- ================= TIMER ================= -->
@@ -216,6 +218,7 @@
   };
   const DEFAULTS = { preset: 'indoor', mode: 'sim' };
   const STORE_KEY = 'bogen-timer-settings-v3';
+  const APP_VERSION = 6;   // bei jeder Änderung erhöhen (auch version.json + sw.js)
 
   let S = Object.assign({}, DEFAULTS);
   try { Object.assign(S, JSON.parse(localStorage.getItem(STORE_KEY) || '{}')); } catch (e) {}
@@ -494,21 +497,50 @@
   // ------------------------------------------------------------------
   // Offline-Unterstützung & automatische Updates
   // ------------------------------------------------------------------
+  // Bei jedem Start / Zurückholen der App (mit Internet) wird version.json
+  // frisch vom Server geholt. Ist die Nummer höher als APP_VERSION, lädt die
+  // App sich neu – aber nie mitten in einer laufenden Runde.
+  let swReg = null, pendingReload = false, reloading = false;
+
+  function doReload() {
+    if (reloading) return;
+    if (R) { pendingReload = true; return; }   // erst nach der Runde
+    reloading = true;
+    $('updateNote').classList.remove('hidden');
+    const go = () => location.reload();
+    // Service Worker zuerst aktualisieren, damit die neue Version auch offline gespeichert ist
+    if (swReg) swReg.update().then(() => setTimeout(go, 600), go); else go();
+  }
+
+  function checkForUpdate() {
+    if (!navigator.onLine) return;
+    fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { if (j && Number(j.version) > APP_VERSION) doReload(); })
+      .catch(() => {});
+  }
+
+  window.__afterStop = () => { if (pendingReload) doReload(); else checkForUpdate(); };
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then((reg) => {
-        reg.update().catch(() => {});
-        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); });
-      }).catch(() => {});
+      navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+        .then(reg => { swReg = reg; reg.update().catch(() => {}); })
+        .catch(() => {});
     });
-    // Neue Version installiert -> neu laden (aber nie mitten in einer Runde)
-    let hadController = !!navigator.serviceWorker.controller, pendingReload = false;
+    let hadController = !!navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (!hadController) { hadController = true; return; }
-      if (R) pendingReload = true; else location.reload();
+      doReload();
     });
-    window.__afterStop = () => { if (pendingReload) location.reload(); };
   }
+
+  checkForUpdate();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') { checkForUpdate(); if (swReg) swReg.update().catch(() => {}); }
+  });
+  window.addEventListener('online', checkForUpdate);
+  window.addEventListener('pageshow', (e) => { if (e.persisted) checkForUpdate(); });
 })();
 </script>
 </body>
