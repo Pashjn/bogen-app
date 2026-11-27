@@ -184,7 +184,7 @@
     <div class="hero-text">
       <div class="eyebrow" data-i18n="eyebrow">World Archery · Timer</div>
       <h1>Archery Timer</h1>
-      <p data-i18n="tagline">Signals, lights and countdown – just like at a tournament.</p>
+      <p data-i18n="tagline">Tournament timing for training: horn, lights and countdown.</p>
     </div>
     <img class="mascot" src="img/geier-recurve.webp" alt="">
   </header>
@@ -216,11 +216,10 @@
 
     <p class="tip" data-i18n-html="tip">
       <b>Signals:</b> 2× = walk to the line · 1× = start shooting · 3× = collect arrows.<br>
-      The screen stays on during a round. Use the iPhone volume buttons to adjust the volume.
-      Works completely offline.
+      The screen stays on during a round. Set the volume with the iPhone buttons. No internet needed.
     </p>
 
-    <div class="footer"><img src="img/club-logo.png" alt=""><span>Arrowclub Dudelange · <span data-i18n="since">since 1957</span></span><span class="ver" id="versionLabel">alpha v1.2</span></div>
+    <div class="footer"><img src="img/club-logo.png" alt=""><span>Arrowclub Dudelange · <span data-i18n="since">since 1957</span></span><span class="ver" id="versionLabel">alpha v1.3</span></div>
   </div>
   <div id="updateNote" class="update-note hidden" data-i18n="updating">Loading new version …</div>
 </main>
@@ -271,8 +270,8 @@
   };
   const DEFAULTS = { preset: 'indoor', mode: 'sim' };
   const STORE_KEY = 'bogen-timer-settings-v3';
-  const APP_VERSION = 9;   // Build-Nummer: bei jeder Änderung +1 (auch version.json + sw.js)
-  const APP_LABEL = 'alpha v1.2';
+  const APP_VERSION = 10;   // Build-Nummer: bei jeder Änderung +1 (auch version.json + sw.js)
+  const APP_LABEL = 'alpha v1.3';
 
   let S = Object.assign({}, DEFAULTS);
   try { Object.assign(S, JSON.parse(localStorage.getItem(STORE_KEY) || '{}')); } catch (e) {}
@@ -294,61 +293,61 @@
   const pl = (n, one, many) => n === 1 ? one : many;
   const I18N = {
     en: {
-      eyebrow: 'World Archery · Timer', tagline: 'Signals, lights and countdown – just like at a tournament.',
+      eyebrow: 'World Archery · Timer', tagline: 'Tournament timing for training: horn, lights and countdown.',
       event: 'Event', order: 'Shooting order', rules: 'Rules (World Archery)',
       p_indoor: 'Indoor 18 m', p_outdoor: 'Outdoor', p_team: 'Team (3)', p_mixed: 'Mixed (2)',
       m_sim: 'Simultaneous', m_alt: 'Alternating',
       start: 'Start', shootoff: 'Shoot-off', test: 'Test signal',
-      tip: '<b>Signals:</b> 2× = walk to the line · 1× = start shooting · 3× = collect arrows.<br>The screen stays on during a round. Use the iPhone volume buttons to adjust the volume. Works completely offline.',
+      tip: '<b>Signals:</b> 2× = walk to the line · 1× = start shooting · 3× = collect arrows.<br>The screen stays on during a round. Set the volume with the iPhone buttons. No internet needed.',
       since: 'since 1957', updating: 'Loading new version …',
       teamA: 'Team A', teamB: 'Team B', paused: 'PAUSED', switch: 'Switch ▶', again: '▶ Again',
       r_members: 'Archers per team', r_arrows: 'Arrows', r_per: '(2 per archer)',
       r_time: 'Shooting time', r_timeTeam: 'Shooting time per team', r_switch: 'Switch after',
       r_prep: 'Preparation (red)', r_yellow: 'Yellow at', r_left: (t) => `${t} left`, r_so: 'Shoot-off',
       arrows: (n) => `${n} ${pl(n, 'arrow', 'arrows')}`, arrowsIn: (n, t) => `${n} ${pl(n, 'arrow', 'arrows')} in ${t}`, perTeam: ' per team',
-      hintAlt: (n, t) => `Like in finals: Team A shoots ${n} arrows, then Team B – each team has its own clock with ${t}.`,
+      hintAlt: (n, t) => `Like in finals: Team A shoots ${n} arrows, then Team B. Each team has its own ${t} clock, which only runs while that team is shooting.`,
       hintSim: 'Both teams shoot at the same time.',
-      walk: 'Walk to the line', aStarts: 'Team A starts', shoot: (n) => `Shoot – ${n} ${pl(n, 'arrow', 'arrows')}`, collect: 'Collect arrows',
+      walk: 'Walk to the line', aStarts: 'Team A starts', shoot: (n) => `Shoot ${n} ${pl(n, 'arrow', 'arrows')}`, collect: 'Collect arrows',
       shooting: 'shooting', done: 'done', waiting: 'waiting',
       pause: 'Pause', resume: 'Resume', startNow: 'Start now', allDone: 'All done', stop: 'Stop', back: 'Back',
       confirmStop: 'Stop this round?', sufAlt: ' · alternating', sufSo: ' · Shoot-off',
     },
     de: {
-      eyebrow: 'World Archery · Timer', tagline: 'Signale, Ampel und Countdown – wie im Turnier.',
+      eyebrow: 'World Archery · Timer', tagline: 'Turnier-Timing fürs Training: Horn, Ampel und Countdown.',
       event: 'Wettkampf', order: 'Schießablauf', rules: 'Regeln (World Archery)',
       p_indoor: 'Halle 18 m', p_outdoor: 'Freiluft', p_team: 'Team (3)', p_mixed: 'Mixed (2)',
       m_sim: 'Gleichzeitig', m_alt: 'Abwechselnd',
       start: 'Start', shootoff: 'Stechen', test: 'Signal testen',
-      tip: '<b>Signale:</b> 2× = zur Schießlinie · 1× = Schießen · 3× = Pfeile holen.<br>Der Bildschirm bleibt während der Runde an. Lautstärke mit den iPhone-Tasten regeln. Funktioniert komplett ohne Internet.',
+      tip: '<b>Signale:</b> 2× = zur Schießlinie · 1× = Schießen · 3× = Pfeile holen.<br>Der Bildschirm bleibt während der Runde an. Die Lautstärke stellst du mit den iPhone-Tasten ein. Läuft auch ohne Internet.',
       since: 'seit 1957', updating: 'Neue Version wird geladen …',
       teamA: 'Team A', teamB: 'Team B', paused: 'PAUSE', switch: 'Wechsel ▶', again: '▶ Nochmal',
       r_members: 'Schützen pro Team', r_arrows: 'Pfeile', r_per: '(2 je Schütze)',
       r_time: 'Schießzeit', r_timeTeam: 'Schießzeit je Team', r_switch: 'Wechsel nach',
       r_prep: 'Vorbereitung (rot)', r_yellow: 'Gelb ab', r_left: (t) => `${t} Restzeit`, r_so: 'Stechen',
       arrows: (n) => `${n} ${pl(n, 'Pfeil', 'Pfeilen')}`, arrowsIn: (n, t) => `${n} ${pl(n, 'Pfeil', 'Pfeile')} in ${t}`, perTeam: ' je Team',
-      hintAlt: (n, t) => `Wie im Finale: Team A schießt ${n} Pfeile, dann Team B – jedes Team hat seine eigene Uhr mit ${t}.`,
+      hintAlt: (n, t) => `Wie im Finale: Team A schießt ${n} Pfeile, dann Team B. Jedes Team hat eine eigene Uhr mit ${t}, die nur läuft, solange es selbst schießt.`,
       hintSim: 'Beide Teams schießen gleichzeitig.',
-      walk: 'Zur Schießlinie', aStarts: 'Team A beginnt', shoot: (n) => `Schießen – ${n} ${pl(n, 'Pfeil', 'Pfeile')}`, collect: 'Pfeile holen',
+      walk: 'Zur Schießlinie', aStarts: 'Team A beginnt', shoot: (n) => `${n} ${pl(n, 'Pfeil', 'Pfeile')} schießen`, collect: 'Pfeile holen',
       shooting: 'schießt', done: 'fertig', waiting: 'wartet',
       pause: 'Pause', resume: 'Weiter', startNow: 'Sofort los', allDone: 'Alle fertig', stop: 'Abbrechen', back: 'Zurück',
       confirmStop: 'Runde wirklich abbrechen?', sufAlt: ' · abwechselnd', sufSo: ' · Stechen',
     },
     fr: {
-      eyebrow: 'World Archery · Chrono', tagline: 'Signaux, feux et compte à rebours – comme en compétition.',
+      eyebrow: 'World Archery · Chrono', tagline: 'Le timing des compétitions pour l’entraînement : signal sonore, feux et compte à rebours.',
       event: 'Épreuve', order: 'Ordre de tir', rules: 'Règles (World Archery)',
       p_indoor: 'Salle 18 m', p_outdoor: 'Extérieur', p_team: 'Équipe (3)', p_mixed: 'Mixte (2)',
       m_sim: 'Simultané', m_alt: 'Alterné',
       start: 'Démarrer', shootoff: 'Barrage', test: 'Tester le signal',
-      tip: '<b>Signaux :</b> 2× = avancer sur la ligne · 1× = début du tir · 3× = retrait des flèches.<br>L’écran reste allumé pendant la volée. Réglez le volume avec les boutons de l’iPhone. Fonctionne entièrement hors ligne.',
+      tip: '<b>Signaux :</b> 2× = avancer sur la ligne · 1× = début du tir · 3× = retrait des flèches.<br>L’écran reste allumé pendant la volée. Le volume se règle avec les boutons de l’iPhone. Fonctionne aussi sans Internet.',
       since: 'depuis 1957', updating: 'Chargement de la nouvelle version …',
       teamA: 'Équipe A', teamB: 'Équipe B', paused: 'PAUSE', switch: 'Changer ▶', again: '▶ Encore',
       r_members: 'Archers par équipe', r_arrows: 'Flèches', r_per: '(2 par archer)',
       r_time: 'Temps de tir', r_timeTeam: 'Temps de tir par équipe', r_switch: 'Changement après',
       r_prep: 'Préparation (rouge)', r_yellow: 'Jaune à', r_left: (t) => `${t} restantes`, r_so: 'Barrage',
       arrows: (n) => `${n} ${pl(n, 'flèche', 'flèches')}`, arrowsIn: (n, t) => `${n} ${pl(n, 'flèche', 'flèches')} en ${t}`, perTeam: ' par équipe',
-      hintAlt: (n, t) => `Comme en finale : l’équipe A tire ${n} flèches, puis l’équipe B – chaque équipe a son propre chrono de ${t}.`,
+      hintAlt: (n, t) => `Comme en finale : l’équipe A tire ${n} flèches, puis l’équipe B. Chaque équipe a son propre chrono de ${t}, qui ne tourne que pendant qu’elle tire.`,
       hintSim: 'Les deux équipes tirent en même temps.',
-      walk: 'Avancez sur la ligne', aStarts: 'L’équipe A commence', shoot: (n) => `Tirez – ${n} ${pl(n, 'flèche', 'flèches')}`, collect: 'Retrait des flèches',
+      walk: 'Avancez sur la ligne', aStarts: 'L’équipe A commence', shoot: (n) => `Tirez ${n} ${pl(n, 'flèche', 'flèches')}`, collect: 'Retrait des flèches',
       shooting: 'tire', done: 'terminé', waiting: 'attend',
       pause: 'Pause', resume: 'Reprendre', startNow: 'Commencer', allDone: 'Tir terminé', stop: 'Arrêter', back: 'Retour',
       confirmStop: 'Arrêter cette volée ?', sufAlt: ' · alterné', sufSo: ' · barrage',
