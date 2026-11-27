@@ -58,6 +58,7 @@
   .row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-top: 1px solid var(--line); gap: 12px; min-height: 54px; }
   .row:first-child { border-top: 0; }
   .row .t { font-size: 16px; }
+  .row .v { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
   .row .h { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
   .step { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .step button { width: 38px; height: 38px; border-radius: 10px; background: #2a313b; font-size: 22px; line-height: 1; }
@@ -130,66 +131,10 @@
   <div class="seg" id="presetSeg">
     <button data-preset="indoor">Halle 18 m</button>
     <button data-preset="outdoor">Freiluft</button>
-    <button data-preset="custom">Eigene</button>
   </div>
 
-  <div class="label">Ablauf</div>
-  <div class="card">
-    <div class="row">
-      <div><div class="t">Pfeile pro Passe</div></div>
-      <div class="step" data-key="arrows" data-min="1" data-max="12" data-inc="1"><button>−</button><output></output><button>+</button></div>
-    </div>
-    <div class="row">
-      <div><div class="t">Schießzeit</div><div class="h">Grünes + gelbes Licht</div></div>
-      <div class="step" data-key="shoot" data-min="10" data-max="600" data-inc="10" data-unit="s"><button>−</button><output></output><button>+</button></div>
-    </div>
-    <div class="row">
-      <div><div class="t">Vorbereitung</div><div class="h">Rot – zur Schießlinie gehen</div></div>
-      <div class="step" data-key="prep" data-min="0" data-max="60" data-inc="5" data-unit="s"><button>−</button><output></output><button>+</button></div>
-    </div>
-    <div class="row">
-      <div><div class="t">Warnzeit</div><div class="h">Gelb ab Restzeit</div></div>
-      <div class="step" data-key="warn" data-min="0" data-max="120" data-inc="5" data-unit="s"><button>−</button><output></output><button>+</button></div>
-    </div>
-  </div>
-
-  <div class="label">Passen</div>
-  <div class="card">
-    <div class="row">
-      <div><div class="t">Probepassen</div></div>
-      <div class="step" data-key="practice" data-min="0" data-max="6" data-inc="1"><button>−</button><output></output><button>+</button></div>
-    </div>
-    <div class="row">
-      <div><div class="t">Wertungspassen</div></div>
-      <div class="step" data-key="ends" data-min="1" data-max="40" data-inc="1"><button>−</button><output></output><button>+</button></div>
-    </div>
-  </div>
-
-  <div class="label">Schießgruppen</div>
-  <div class="card">
-    <div class="row">
-      <div><div class="t">Gruppen</div><div class="h">AB/CD wechseln sich ab</div></div>
-      <div class="seg" id="groupsSeg"><button data-v="single">Eine</button><button data-v="abcd">AB / CD</button></div>
-    </div>
-    <div class="row" id="myGroupRow">
-      <div><div class="t">Meine Gruppe</div><div class="h">Wird hervorgehoben</div></div>
-      <div class="seg" id="myGroupSeg"><button data-v="AB">AB</button><button data-v="CD">CD</button></div>
-    </div>
-  </div>
-
-  <div class="label">Nach jeder Passe</div>
-  <div class="card">
-    <div class="row">
-      <div><div class="t">Nächste Passe</div><div class="h">Nach Pfeile holen &amp; werten</div></div>
-      <div class="seg" id="afterSeg"><button data-v="tap">Antippen</button><button data-v="auto">Automatisch</button></div>
-    </div>
-    <div class="row" id="afterSecRow">
-      <div><div class="t">Pause bis zur nächsten Passe</div></div>
-      <div class="step" data-key="afterSec" data-min="15" data-max="900" data-inc="15" data-unit="s"><button>−</button><output></output><button>+</button></div>
-    </div>
-  </div>
-
-  <p class="summary" id="summary"></p>
+  <div class="label">Regeln (World Archery)</div>
+  <div class="card" id="rules"></div>
 
   <button class="btn-start" id="startBtn">▶ Start</button>
   <button class="btn-ghost" id="testBtn">🔊 Signal testen</button>
@@ -229,77 +174,41 @@
   // Einstellungen
   // ------------------------------------------------------------------
   const PRESETS = {
-    indoor:  { arrows: 3, shoot: 120, prep: 10, warn: 30, practice: 2, ends: 20 },
-    outdoor: { arrows: 6, shoot: 240, prep: 10, warn: 30, practice: 2, ends: 12 },
+    indoor:  { name: 'Halle 18 m', arrows: 3, shoot: 120, prep: 10, warn: 30, practice: 2, ends: 20 },
+    outdoor: { name: 'Freiluft',   arrows: 6, shoot: 240, prep: 10, warn: 30, practice: 2, ends: 12 },
   };
-  const DEFAULTS = Object.assign({ preset: 'indoor', groups: 'single', myGroup: 'AB', after: 'tap', afterSec: 120 }, PRESETS.indoor);
-  const STORE_KEY = 'bogen-timer-settings-v1';
+  const DEFAULTS = { preset: 'indoor' };
+  const STORE_KEY = 'bogen-timer-settings-v2';
 
   let S = Object.assign({}, DEFAULTS);
   try { Object.assign(S, JSON.parse(localStorage.getItem(STORE_KEY) || '{}')); } catch (e) {}
+  if (!PRESETS[S.preset]) S.preset = 'indoor';
   const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {} };
 
   const $ = (id) => document.getElementById(id);
-  const fmtSec = (s) => s >= 60 && s % 60 === 0 ? (s / 60) + ' min' : (s >= 60 ? Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + ' min' : s + ' s');
+  const fmtSec = (s) => s >= 60 && s % 60 === 0 ? (s / 60) + ' min' : s + ' s';
 
-  function detectPreset() {
-    for (const [name, p] of Object.entries(PRESETS)) {
-      if (Object.keys(p).every(k => S[k] === p[k])) return name;
-    }
-    return 'custom';
-  }
+  // Vollständige Ablauf-Konfiguration aus Regeln + Gruppenwahl
+  const config = () => Object.assign({}, PRESETS[S.preset], { groups: 'single', myGroup: '', after: 'tap' });
 
   function renderSetup() {
-    document.querySelectorAll('.step').forEach(el => {
-      const k = el.dataset.key, unit = el.dataset.unit;
-      el.querySelector('output').textContent = unit === 's' ? fmtSec(S[k]) : S[k];
-    });
+    const p = PRESETS[S.preset];
+    const rows = [
+      ['Pfeile pro Passe', p.arrows],
+      ['Schießzeit', fmtSec(p.shoot)],
+      ['Vorbereitung (rot)', fmtSec(p.prep)],
+      ['Gelb ab Restzeit', fmtSec(p.warn)],
+      ['Passen', `${p.practice} Probe + ${p.ends} Wertung`],
+      ['Wertungspfeile', p.ends * p.arrows],
+    ];
+    $('rules').innerHTML = rows.map(([t, v]) => `<div class="row"><div class="t">${t}</div><div class="v">${v}</div></div>`).join('');
     document.querySelectorAll('#presetSeg button').forEach(b => b.classList.toggle('on', b.dataset.preset === S.preset));
-    const segOn = (id, v) => document.querySelectorAll('#' + id + ' button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
-    segOn('groupsSeg', S.groups);
-    segOn('myGroupSeg', S.myGroup);
-    segOn('afterSeg', S.after);
-    $('myGroupRow').classList.toggle('hidden', S.groups !== 'abcd');
-    $('afterSecRow').classList.toggle('hidden', S.after !== 'auto');
-
-    const total = S.ends * S.arrows;
-    $('summary').textContent =
-      `${S.practice ? S.practice + ' Probepasse' + (S.practice > 1 ? 'n + ' : ' + ') : ''}` +
-      `${S.ends} Passen à ${S.arrows} Pfeile = ${total} Wertungspfeile. ` +
-      `${fmtSec(S.shoot)} Schießzeit` + (S.groups === 'abcd' ? ', Gruppen AB/CD im Wechsel.' : '.');
   }
 
-  document.querySelectorAll('.step').forEach(el => {
-    const [minus, plus] = el.querySelectorAll('button');
-    const k = el.dataset.key, min = +el.dataset.min, max = +el.dataset.max, inc = +el.dataset.inc;
-    const change = (d) => {
-      S[k] = Math.min(max, Math.max(min, S[k] + d * inc));
-      if (k in PRESETS.indoor) S.preset = detectPreset();
-      save(); renderSetup();
-    };
-    // Gedrückt halten = schnell zählen
-    [[minus, -1], [plus, 1]].forEach(([btn, d]) => {
-      let t1, t2;
-      const stop = () => { clearTimeout(t1); clearInterval(t2); };
-      btn.addEventListener('pointerdown', (e) => {
-        e.preventDefault(); change(d);
-        t1 = setTimeout(() => { t2 = setInterval(() => change(d), 90); }, 450);
-      });
-      ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => btn.addEventListener(ev, stop));
-    });
-  });
-
   document.querySelectorAll('#presetSeg button').forEach(b => b.addEventListener('click', () => {
-    S.preset = b.dataset.preset;
-    if (PRESETS[S.preset]) Object.assign(S, PRESETS[S.preset]);
-    save(); renderSetup();
+    S.preset = b.dataset.preset; save(); renderSetup();
   }));
-  const bindSeg = (id, key) => document.querySelectorAll('#' + id + ' button').forEach(b => b.addEventListener('click', () => {
-    S[key] = b.dataset.v; save(); renderSetup();
-  }));
-  bindSeg('groupsSeg', 'groups');
-  bindSeg('myGroupSeg', 'myGroup');
-  bindSeg('afterSeg', 'after');
+
 
   // ------------------------------------------------------------------
   // Signalhorn (wird live erzeugt – keine Audiodateien, läuft offline)
@@ -369,7 +278,7 @@
   function startRun() {
     unlockAudio();
     keepAwake();
-    R = { cfg: Object.assign({}, S), endIdx: 0, detail: 0, phase: null, phaseEnd: null, remaining: 0, paused: false };
+    R = { cfg: config(), endIdx: 0, detail: 0, phase: null, phaseEnd: null, remaining: 0, paused: false };
     $('setup').classList.add('hidden');
     $('timer').classList.remove('hidden');
     startWalkup();
