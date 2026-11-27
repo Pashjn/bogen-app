@@ -23,7 +23,9 @@ wenn der Server höher ist (nie während einer laufenden Runde).
 App-Texte in EN / DE / FR über das `I18N`-Objekt in index.html. Neue Texte immer in allen
 drei Sprachen anlegen (Schlüssel per `T('key')` oder `data-i18n="key"`).
 
-## Später (erst wenn der Nutzer ausdrücklich OK sagt!)
-Veröffentlichung für Vereinsmitglieder: App auf https://www.arrowclub.lu/ verlinken, z. B. mit
-QR-Code, evtl. eigene Adresse wie timer.arrowclub.lu (GitHub-Pages-Custom-Domain).
-Vorher NICHTS davon umsetzen oder auf der Website ändern.
+## Website-Einbindung (vom Nutzer freigegeben)
+Nur dezent im Footer von https://www.arrowclub.lu/: App-Symbol (icons/icon-192.png, ca. 48 px,
+abgerundet) als drittes Logo neben FLTA und Ville de Dudelange in „Footer Widget 1“ (Astra),
+Link direkt auf https://pashjn.github.io/bogen-app/ (neuer Tab), Alt-Text „Simple Archery Timer“.
+Kein Hauptmenü, keine Startseite, kein Pop-up. Der Nutzer setzt das selbst in WordPress um
+(kein WordPress-Passwort an Claude). Eigene Adresse wie timer.arrowclub.lu nur auf Nachfrage.
