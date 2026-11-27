@@ -2,9 +2,9 @@
 // Online: immer zuerst die neueste Version vom Server holen.
 // Offline: gespeicherte Version verwenden.
 // Bei Änderungen VERSION erhöhen.
-const VERSION = 'b12';
+const VERSION = 'b13';
 const CACHE = 'bogen-timer-' + VERSION;
-const FILES = ['./', './index.html', './manifest.webmanifest', './version.json', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png', './fonts/roboto-latin.woff2', './img/club-logo.png', './img/geier-recurve.webp', './img/geier-target.webp', './img/geier-siesta.webp', './img/geier-trophy.webp'];
+const FILES = ['./', './index.html', './manifest.webmanifest', './version.json', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png', './fonts/roboto-latin.woff2', './img/club-logo.png', './img/geier-recurve.webp', './img/geier-target.webp', './img/geier-siesta.webp', './img/geier-trophy.webp', './img/qr.svg'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
