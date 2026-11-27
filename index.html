@@ -52,21 +52,15 @@
   .sub { color: var(--muted); margin: 0 0 20px; font-size: 15px; }
   .label { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 22px 4px 8px; }
   .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--card); border-radius: 12px; padding: 4px; gap: 4px; }
+  .seg.grid2 { grid-auto-flow: row; grid-template-columns: 1fr 1fr; }
   .seg button { background: transparent; padding: 11px 6px; border-radius: 9px; font-size: 15px; font-weight: 600; color: var(--muted); }
   .seg button.on { background: var(--accent); color: #111; }
+  .seg-hint { color: var(--muted); font-size: 13px; margin: 8px 4px 0; line-height: 1.45; }
   .card { background: var(--card); border-radius: 14px; overflow: hidden; }
-  .row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-top: 1px solid var(--line); gap: 12px; min-height: 54px; }
+  .row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-top: 1px solid var(--line); gap: 12px; min-height: 52px; }
   .row:first-child { border-top: 0; }
   .row .t { font-size: 16px; }
-  .row .v { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
-  .row .h { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
-  .step { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-  .step button { width: 38px; height: 38px; border-radius: 10px; background: #2a313b; font-size: 22px; line-height: 1; }
-  .step button:active { background: #3a4350; }
-  .step output { min-width: 58px; text-align: center; font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
-  .row .seg { min-width: 150px; background: #2a313b; }
-  .row .seg button { padding: 8px 8px; font-size: 14px; }
-  .summary { color: var(--muted); font-size: 14px; margin: 14px 4px 0; line-height: 1.45; }
+  .row .v { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
   .btn-start { display: block; width: 100%; margin-top: 22px; padding: 18px; border-radius: 16px; background: var(--green); font-size: 21px; font-weight: 700; color: #fff; }
   .btn-start:active { filter: brightness(1.12); }
   .btn-ghost { display: block; width: 100%; margin-top: 10px; padding: 14px; border-radius: 14px; background: var(--card); font-size: 16px; font-weight: 600; }
@@ -83,16 +77,13 @@
   #timer[data-phase="walkup"] { background: var(--red); }
   #timer[data-phase="shoot"]  { background: var(--green); }
   #timer[data-phase="warn"]   { background: var(--yellow); color: #111; }
-  #timer[data-phase="collect"]{ background: var(--blue); }
-  #timer[data-phase="done"]   { background: var(--bg); }
-  #timer.paused .big { opacity: .45; }
-  #timer.other .big { opacity: .55; }
+  #timer[data-phase="collect"], #timer[data-phase="ready"] { background: var(--blue); }
+  #timer[data-phase="done"], #timer[data-phase="alt"] { background: var(--bg); }
+  #timer.paused .big, #timer.paused .clock .num { opacity: .45; }
 
   .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
   .end-info { font-size: 20px; font-weight: 700; }
   .end-info small { display: block; font-size: 14px; font-weight: 500; opacity: .8; margin-top: 2px; }
-  .badge { font-size: 26px; font-weight: 800; padding: 4px 14px; border-radius: 12px; background: rgba(0,0,0,.25); letter-spacing: .04em; }
-  .badge.me { background: #fff; color: #111; }
 
   .mid { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 0; }
   .phase { font-size: clamp(22px, 6vw, 40px); font-weight: 700; }
@@ -103,20 +94,41 @@
     letter-spacing: -.03em;
     transition: opacity .2s;
   }
-  #timer[data-phase="collect"] .big, #timer[data-phase="done"] .big { font-size: min(30vw, 34vh); }
+  #timer[data-phase="collect"] .big, #timer[data-phase="done"] .big, #timer[data-phase="ready"] .big { font-size: min(30vw, 34vh); }
   .paused-tag { font-size: 22px; font-weight: 800; letter-spacing: .2em; margin-top: 6px; }
 
-  .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-  .controls button { padding: 16px 6px; border-radius: 14px; background: rgba(0,0,0,.28); font-size: 16px; font-weight: 700; color: inherit; }
+  /* Zwei Uhren (abwechselndes Schießen) */
+  .clocks { flex: 1; display: flex; flex-direction: column; gap: 12px; margin: 12px 0; min-height: 0; }
+  .clock {
+    flex: 1; border-radius: 22px; background: #232a33; color: #6f7a88;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: background-color .25s, color .25s; position: relative; min-height: 0;
+  }
+  .clock .name { font-size: clamp(18px, 5vw, 26px); font-weight: 700; }
+  .clock .num { font-size: min(30vw, 20vh); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
+  .clock .info { font-size: 15px; font-weight: 600; min-height: 1.2em; }
+  .clock.on { background: var(--green); color: #fff; }
+  .clock.on.warn { background: var(--yellow); color: #111; }
+  .clock.out { color: #4c5561; }
+  #timer.paused .clocks .paused-tag { display: block; }
+
+  .controls { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .controls button { grid-column: span 2; padding: 16px 6px; border-radius: 14px; background: rgba(0,0,0,.28); font-size: 16px; font-weight: 700; color: inherit; }
   .controls button:active { background: rgba(0,0,0,.4); }
-  .controls .wide { grid-column: 1 / -1; padding: 20px; font-size: 20px; background: rgba(255,255,255,.95); color: #111; }
-  #timer[data-phase="warn"] .controls button:not(.wide) { background: rgba(0,0,0,.14); }
+  .controls .half { grid-column: span 3; }
+  .controls .wide { grid-column: 1 / -1; }
+  .controls .primary { padding: 20px; font-size: 20px; background: rgba(255,255,255,.95); color: #111; }
+  .controls .primary:active { background: #fff; }
+  #timer[data-phase="warn"] .controls button:not(.primary) { background: rgba(0,0,0,.14); }
+  #timer[data-phase="alt"] .controls button:not(.primary) { background: #232a33; }
 
   @media (orientation: landscape) and (max-height: 500px) {
     .big { font-size: min(30vw, 58vh); }
     .phase { font-size: 24px; }
+    .clocks { flex-direction: row; }
+    .clock .num { font-size: min(20vw, 40vh); }
     .controls button { padding: 11px 6px; }
-    .controls .wide { padding: 12px; }
+    .controls .primary { padding: 12px; }
   }
 </style>
 </head>
@@ -128,9 +140,20 @@
   <p class="sub">Schießablauf nach World Archery – mit Signalen, Ampel und Countdown.</p>
 
   <div class="label">Wettkampf</div>
-  <div class="seg" id="presetSeg">
-    <button data-preset="indoor">Halle 18 m</button>
-    <button data-preset="outdoor">Freiluft</button>
+  <div class="seg grid2" id="presetSeg">
+    <button data-v="indoor">Halle 18 m</button>
+    <button data-v="outdoor">Freiluft</button>
+    <button data-v="team">Team (3er)</button>
+    <button data-v="mixed">Mixed (2er)</button>
+  </div>
+
+  <div id="modeBox">
+    <div class="label">Ablauf</div>
+    <div class="seg" id="modeSeg">
+      <button data-v="sim">Gleichzeitig</button>
+      <button data-v="alt">Abwechselnd</button>
+    </div>
+    <p class="seg-hint" id="modeHint"></p>
   </div>
 
   <div class="label">Regeln (World Archery)</div>
@@ -141,29 +164,39 @@
 
   <p class="tip">
     <b>Signale:</b> 2× = zur Schießlinie · 1× = Schießen · 3× = Pfeile holen.<br>
-    Der Bildschirm bleibt während des Ablaufs an. Lautstärke am iPhone hochdrehen.
+    Der Bildschirm bleibt während des Ablaufs an. Lautstärke mit den iPhone-Tasten regeln.
     Funktioniert komplett ohne Internet.
   </p>
-  <p class="tip" style="opacity:.6">Version 3</p>
+  <p class="tip" style="opacity:.6">Version 4</p>
 </main>
 
 <!-- ================= TIMER ================= -->
 <section id="timer" class="hidden" data-phase="walkup">
   <div class="top">
-    <div class="end-info"><span id="endLabel">Passe 1 / 10</span><small id="endSub"></small></div>
-    <div class="badge hidden" id="groupBadge">AB</div>
+    <div class="end-info"><span id="endLabel"></span><small id="endSub"></small></div>
   </div>
-  <div class="mid">
-    <div class="phase" id="phaseLabel">Zur Schießlinie</div>
-    <div class="big" id="bigNum">10</div>
+
+  <div class="mid" id="singleView">
+    <div class="phase" id="phaseLabel"></div>
+    <div class="big" id="bigNum"></div>
     <div class="paused-tag hidden" id="pausedTag">PAUSE</div>
     <div class="phase-sub" id="phaseSub"></div>
   </div>
-  <div class="controls" id="controls">
+
+  <div class="clocks hidden" id="altView">
+    <div class="clock" id="clockA"><div class="name">Team A</div><div class="num">0</div><div class="info"></div></div>
+    <div class="clock" id="clockB"><div class="name">Team B</div><div class="num">0</div><div class="info"></div></div>
+  </div>
+
+  <div class="controls">
+    <button class="wide primary hidden" id="switchBtn">Wechsel ▶</button>
+    <button class="half primary hidden" id="pickA">Team A beginnt</button>
+    <button class="half primary hidden" id="pickB">Team B beginnt</button>
+    <button class="wide primary hidden" id="nextBtn">Nächste Passe ▶</button>
+    <button class="wide primary hidden" id="soBtn">Stechen ▶</button>
     <button id="pauseBtn">Pause</button>
     <button id="skipBtn">Alle fertig</button>
     <button id="stopBtn">Beenden</button>
-    <button class="wide hidden" id="nextBtn">Nächste Passe ▶</button>
   </div>
 </section>
 
@@ -172,44 +205,70 @@
   'use strict';
 
   // ------------------------------------------------------------------
-  // Einstellungen
+  // Regeln (fest nach World Archery)
   // ------------------------------------------------------------------
   const PRESETS = {
-    indoor:  { name: 'Halle 18 m', arrows: 3, shoot: 120, prep: 10, warn: 30, practice: 2, ends: 20 },
-    outdoor: { name: 'Freiluft',   arrows: 6, shoot: 240, prep: 10, warn: 30, practice: 2, ends: 12 },
+    indoor:  { kind: 'qual', arrows: 3, shoot: 120, prep: 10, warn: 30, practice: 2, ends: 20 },
+    outdoor: { kind: 'qual', arrows: 6, shoot: 240, prep: 10, warn: 30, practice: 2, ends: 12 },
+    // Team-Matches: Sätze, Stechen; perTurn = Pfeile pro Durchgang beim abwechselnden Schießen
+    team:    { kind: 'team', members: 3, arrows: 6, perTurn: 3, shoot: 120, prep: 10, warn: 30, practice: 0, ends: 4, soArrows: 3, soShoot: 60 },
+    mixed:   { kind: 'team', members: 2, arrows: 4, perTurn: 2, shoot: 80,  prep: 10, warn: 30, practice: 0, ends: 4, soArrows: 2, soShoot: 40 },
   };
-  const DEFAULTS = { preset: 'indoor' };
-  const STORE_KEY = 'bogen-timer-settings-v2';
+  const DEFAULTS = { preset: 'indoor', mode: 'sim' };
+  const STORE_KEY = 'bogen-timer-settings-v3';
 
   let S = Object.assign({}, DEFAULTS);
   try { Object.assign(S, JSON.parse(localStorage.getItem(STORE_KEY) || '{}')); } catch (e) {}
   if (!PRESETS[S.preset]) S.preset = 'indoor';
+  if (S.mode !== 'alt') S.mode = 'sim';
   const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {} };
 
   const $ = (id) => document.getElementById(id);
   const fmtSec = (s) => s >= 60 && s % 60 === 0 ? (s / 60) + ' min' : s + ' s';
+  const fmtClock = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 
-  // Vollständige Ablauf-Konfiguration aus Regeln + Gruppenwahl
-  const config = () => Object.assign({}, PRESETS[S.preset], { groups: 'single', myGroup: '', after: 'tap' });
+  const config = () => {
+    const p = PRESETS[S.preset];
+    return Object.assign({}, p, { alt: p.kind === 'team' && S.mode === 'alt' });
+  };
 
   function renderSetup() {
     const p = PRESETS[S.preset];
-    const rows = [
-      ['Pfeile pro Passe', p.arrows],
-      ['Schießzeit', fmtSec(p.shoot)],
-      ['Vorbereitung (rot)', fmtSec(p.prep)],
-      ['Gelb ab Restzeit', fmtSec(p.warn)],
-      ['Passen', `${p.practice} Probe + ${p.ends} Wertung`],
-      ['Wertungspfeile', p.ends * p.arrows],
-    ];
+    const isTeam = p.kind === 'team';
+    const alt = isTeam && S.mode === 'alt';
+    let rows;
+    if (!isTeam) {
+      rows = [
+        ['Pfeile pro Passe', p.arrows],
+        ['Schießzeit', fmtSec(p.shoot)],
+        ['Vorbereitung (rot)', fmtSec(p.prep)],
+        ['Gelb ab Restzeit', fmtSec(p.warn)],
+        ['Passen', `${p.practice} Probe + ${p.ends} Wertung`],
+        ['Wertungspfeile', p.ends * p.arrows],
+      ];
+    } else {
+      rows = [
+        ['Schützen pro Team', p.members],
+        ['Pfeile pro Satz', `${p.arrows} (2 je Schütze)`],
+        [alt ? 'Schießzeit je Team' : 'Schießzeit', fmtSec(p.shoot)],
+        ...(alt ? [['Wechsel nach', `${p.perTurn} Pfeilen`]] : []),
+        ['Vorbereitung (rot)', fmtSec(p.prep)],
+        ['Gelb ab Restzeit', fmtSec(p.warn)],
+        ['Sätze', `bis zu ${p.ends}`],
+        ['Stechen', `${p.soArrows} Pfeile in ${fmtSec(p.soShoot)}`],
+      ];
+    }
     $('rules').innerHTML = rows.map(([t, v]) => `<div class="row"><div class="t">${t}</div><div class="v">${v}</div></div>`).join('');
-    document.querySelectorAll('#presetSeg button').forEach(b => b.classList.toggle('on', b.dataset.preset === S.preset));
+    document.querySelectorAll('#presetSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === S.preset));
+    document.querySelectorAll('#modeSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === S.mode));
+    $('modeBox').classList.toggle('hidden', !isTeam);
+    $('modeHint').textContent = alt
+      ? `Wie im Finale: Team A schießt ${p.perTurn} Pfeile, dann Team B – jedes Team hat seine eigene Uhr mit ${fmtSec(p.shoot)}.`
+      : `Beide Teams schießen gleichzeitig auf ihre Scheiben.`;
   }
 
-  document.querySelectorAll('#presetSeg button').forEach(b => b.addEventListener('click', () => {
-    S.preset = b.dataset.preset; save(); renderSetup();
-  }));
-
+  document.querySelectorAll('#presetSeg button').forEach(b => b.addEventListener('click', () => { S.preset = b.dataset.v; save(); renderSetup(); }));
+  document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', () => { S.mode = b.dataset.v; save(); renderSetup(); }));
 
   // ------------------------------------------------------------------
   // Signalhorn (wird live erzeugt – keine Audiodateien, läuft offline)
@@ -226,7 +285,6 @@
       master.connect(comp); comp.connect(ctx.destination);
     }
     if (ctx.state !== 'running') ctx.resume();
-    // Kurzer stiller Ton, damit iOS den Audiokanal freigibt
     const o = ctx.createOscillator(), g = ctx.createGain();
     g.gain.value = 0; o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.05);
   }
@@ -270,19 +328,22 @@
   // ------------------------------------------------------------------
   // Ablauf
   // ------------------------------------------------------------------
-  // Phasen: walkup (rot) -> shoot (grün/gelb) -> [nächste Gruppe: walkup ...] -> collect -> nächste Passe ... -> done
+  // Gleichzeitig:  walkup (rot) -> shoot (grün/gelb) -> collect -> ... -> done [-> Stechen]
+  // Abwechselnd:   ready (wer beginnt?) -> walkup -> alt (zwei Uhren) -> collect/ready -> ... -> done [-> Stechen]
   let R = null;
   const now = () => Date.now();
   const totalEnds = () => R.cfg.practice + R.cfg.ends;
-  const detailsFor = (i) => R.cfg.groups === 'abcd' ? (i % 2 === 0 ? ['AB', 'CD'] : ['CD', 'AB']) : [null];
+  const shootTime = () => R.shootoff ? R.cfg.soShoot : R.cfg.shoot;
+  const arrowsNow = () => R.shootoff ? R.cfg.soArrows : R.cfg.arrows;
+  const other = (t) => t === 'A' ? 'B' : 'A';
 
   function startRun() {
     unlockAudio();
     keepAwake();
-    R = { cfg: config(), endIdx: 0, detail: 0, phase: null, phaseEnd: null, remaining: 0, paused: false };
+    R = { cfg: config(), endIdx: 0, phase: null, phaseEnd: null, remaining: 0, paused: false, shootoff: false, alt: null };
     $('setup').classList.add('hidden');
     $('timer').classList.remove('hidden');
-    startWalkup();
+    if (R.cfg.alt) setPhase('ready', null); else startWalkup();
     loop();
   }
 
@@ -294,24 +355,63 @@
   }
 
   function startWalkup() {
-    if (R.cfg.prep <= 0) { horn(2); return setTimeout(() => R && startShoot(), 2200); }
     horn(2);
     setPhase('walkup', R.cfg.prep);
   }
-  function startShoot() { horn(1); setPhase('shoot', R.cfg.shoot); }
-  function endShoot() {
-    const det = detailsFor(R.endIdx);
-    if (R.detail < det.length - 1) { R.detail++; startWalkup(); return; }
-    horn(3);
-    if (R.endIdx >= totalEnds() - 1) { setPhase('done', null); releaseAwake(); return; }
-    setPhase('collect', R.cfg.after === 'auto' ? R.cfg.afterSec : null);
+
+  function startShoot() {
+    horn(1);
+    if (R.cfg.alt) {
+      R.phase = 'alt'; R.paused = false;
+      R.phaseEnd = now() + R.alt.clocks[R.alt.turn];
+      render();
+    } else {
+      setPhase('shoot', shootTime());
+    }
   }
-  function nextEnd() { R.endIdx++; R.detail = 0; startWalkup(); }
+
+  // Abwechselnd: Startteam wählen und Satz vorbereiten
+  function pickStarter(team) {
+    const turns = arrowsNow() / R.cfg.perTurn;
+    R.alt = { turn: team, clocks: { A: shootTime() * 1000, B: shootTime() * 1000 }, turnsLeft: { A: turns, B: turns } };
+    startWalkup();
+  }
+
+  // Abwechselnd: Team ist fertig (oder Zeit abgelaufen) -> anderes Team
+  function switchTurn(timeout) {
+    const a = R.alt, t = a.turn;
+    a.clocks[t] = timeout ? 0 : Math.max(0, R.phaseEnd - now());
+    a.turnsLeft[t] = (timeout || a.clocks[t] <= 0) ? 0 : a.turnsLeft[t] - 1;
+    const o = other(t);
+    if (a.clocks[o] <= 0) a.turnsLeft[o] = 0;
+    let next = null;
+    if (a.turnsLeft[o] > 0) next = o;
+    else if (a.turnsLeft[t] > 0) next = t;
+    if (!next) { endShoot(); return; }
+    a.turn = next;
+    R.paused = false;
+    R.phaseEnd = now() + a.clocks[next];
+    render();
+  }
+
+  function endShoot() {
+    horn(3);
+    if (R.shootoff || R.endIdx >= totalEnds() - 1) { setPhase('done', null); return; }
+    if (R.cfg.alt) setPhase('ready', null); else setPhase('collect', null);
+  }
+
+  function nextEnd() { R.endIdx++; startWalkup(); }
+
+  function startShootoff() {
+    R.shootoff = true;
+    keepAwake();
+    if (R.cfg.alt) setPhase('ready', null); else startWalkup();
+  }
 
   function advance() {
     if (R.phase === 'walkup') startShoot();
     else if (R.phase === 'shoot') endShoot();
-    else if (R.phase === 'collect') nextEnd();
+    else if (R.phase === 'alt') switchTurn(true);
   }
 
   function stopRun() {
@@ -323,7 +423,7 @@
   }
 
   function togglePause() {
-    if (!R || R.phaseEnd == null && !R.paused) return;
+    if (!R || (R.phaseEnd == null && !R.paused)) return;
     if (R.paused) { R.paused = false; R.phaseEnd = now() + R.remaining; }
     else { R.remaining = Math.max(0, R.phaseEnd - now()); R.paused = true; R.phaseEnd = null; }
     render();
@@ -342,43 +442,51 @@
   // ------------------------------------------------------------------
   // Anzeige
   // ------------------------------------------------------------------
-  let lastKey = '';
   function render() {
     if (!R) return;
     const c = R.cfg;
     const remMs = R.paused ? R.remaining : (R.phaseEnd == null ? 0 : Math.max(0, R.phaseEnd - now()));
     const secs = Math.ceil(remMs / 1000);
-    const det = detailsFor(R.endIdx);
-    const group = det[R.detail];
+    const isTeam = c.kind === 'team';
     const isPractice = R.endIdx < c.practice;
+    const unit = isTeam ? 'Satz' : (isPractice ? 'Probepasse' : 'Passe');
     const num = isPractice ? R.endIdx + 1 : R.endIdx - c.practice + 1;
+    const of = isPractice ? c.practice : c.ends;
 
     let visPhase = R.phase;
     if (R.phase === 'shoot' && c.warn > 0 && remMs <= c.warn * 1000) visPhase = 'warn';
 
     let phaseLabel = '', phaseSub = '', big = String(secs);
-    const other = c.groups === 'abcd' && group && group !== c.myGroup && (R.phase === 'walkup' || R.phase === 'shoot');
+    const nextUnit = () => {
+      if (isTeam) return R.shootoff ? 'Stechen' : `Satz ${R.endIdx + 2}`;
+      const nIsPr = R.endIdx + 1 < c.practice;
+      return `${nIsPr ? 'Probepasse' : 'Passe'} ${nIsPr ? R.endIdx + 2 : R.endIdx + 2 - c.practice}`;
+    };
 
     switch (R.phase) {
       case 'walkup':
-        phaseLabel = other ? 'Andere Gruppe geht vor' : 'Zur Schießlinie';
-        phaseSub = group ? `Gruppe ${group}` : '';
+        phaseLabel = 'Zur Schießlinie';
+        if (c.alt) phaseSub = `Team ${R.alt.turn} beginnt`;
         break;
       case 'shoot':
-        phaseLabel = other ? `Gruppe ${group} schießt` : `Schießen – ${c.arrows} Pfeil${c.arrows > 1 ? 'e' : ''}`;
+        phaseLabel = `Schießen – ${arrowsNow()} Pfeil${arrowsNow() > 1 ? 'e' : ''}`;
         break;
-      case 'collect': {
-        phaseLabel = 'Pfeile holen & werten';
-        const nextIsPractice = R.endIdx + 1 < c.practice;
-        const nextNum = nextIsPractice ? R.endIdx + 2 : R.endIdx + 2 - c.practice;
-        const nextDet = detailsFor(R.endIdx + 1);
-        phaseSub = `Als Nächstes: ${nextIsPractice ? 'Probepasse' : 'Passe'} ${nextNum}` + (nextDet[0] ? ` · ${nextDet[0]} zuerst` : '');
-        big = R.phaseEnd == null && !R.paused ? '🏹' : fmtClock(secs);
+      case 'collect':
+        phaseLabel = isTeam ? 'Pfeile holen & Satzpunkte' : 'Pfeile holen & werten';
+        phaseSub = `Als Nächstes: ${nextUnit()}`;
+        big = '🏹';
         break;
-      }
+      case 'ready':
+        if (R.shootoff) { phaseLabel = 'Stechen'; phaseSub = 'Wer beginnt?'; }
+        else if (R.endIdx === 0 && !R.alt) { phaseLabel = 'Wer beginnt?'; phaseSub = 'Satz 1'; }
+        else { phaseLabel = 'Pfeile holen & Satzpunkte'; phaseSub = `${nextUnit()} – wer beginnt?`; }
+        big = '🏹';
+        break;
       case 'done':
-        phaseLabel = 'Fertig!';
-        phaseSub = `${c.ends} Passen · ${c.ends * c.arrows} Wertungspfeile`;
+        phaseLabel = R.shootoff ? 'Stechen beendet' : 'Fertig!';
+        phaseSub = isTeam
+          ? (R.shootoff ? '' : 'Unentschieden? Dann Stechen.')
+          : `${c.ends} Passen · ${c.ends * c.arrows} Wertungspfeile`;
         big = '🎯';
         break;
     }
@@ -386,41 +494,83 @@
     const t = $('timer');
     t.dataset.phase = visPhase;
     t.classList.toggle('paused', R.paused);
-    t.classList.toggle('other', !!other);
 
-    $('endLabel').textContent = R.phase === 'done' ? 'Durchgang beendet' : `${isPractice ? 'Probepasse' : 'Passe'} ${num} / ${isPractice ? c.practice : c.ends}`;
-    $('endSub').textContent = isPractice ? '' : (c.practice ? `insgesamt ${R.endIdx + 1} / ${totalEnds()}` : '');
-    const badge = $('groupBadge');
-    badge.classList.toggle('hidden', !group || R.phase === 'collect' || R.phase === 'done');
-    badge.textContent = group || '';
-    badge.classList.toggle('me', !!group && group === c.myGroup);
+    // Kopfzeile
+    let endLabel;
+    if (R.phase === 'done') endLabel = isTeam ? 'Match beendet' : 'Durchgang beendet';
+    else if (R.shootoff) endLabel = 'Stechen';
+    else if (R.phase === 'ready' && R.alt) endLabel = `${unit} ${num} / ${of} beendet`;
+    else endLabel = `${unit} ${num} / ${of}`;
+    $('endLabel').textContent = endLabel;
+    let endSub = '';
+    if (!isTeam && !isPractice && c.practice && R.phase !== 'done') endSub = `insgesamt ${R.endIdx + 1} / ${totalEnds()}`;
+    if (c.alt && R.phase === 'alt') endSub = `${arrowsNow()} Pfeile je Team · Wechsel nach ${R.shootoff ? 1 : c.perTurn}`;
+    $('endSub').textContent = endSub;
 
-    $('phaseLabel').textContent = phaseLabel;
-    $('phaseSub').textContent = phaseSub;
-    $('bigNum').textContent = big;
-    $('pausedTag').classList.toggle('hidden', !R.paused);
+    // Ansicht: eine große Zahl oder zwei Uhren
+    const showClocks = R.phase === 'alt';
+    $('singleView').classList.toggle('hidden', showClocks);
+    $('altView').classList.toggle('hidden', !showClocks);
+
+    if (showClocks) {
+      const a = R.alt;
+      ['A', 'B'].forEach(team => {
+        const el = $('clock' + team);
+        const active = a.turn === team;
+        const ms = active ? remMs : a.clocks[team];
+        const s = Math.ceil(ms / 1000);
+        el.classList.toggle('on', active);
+        el.classList.toggle('warn', active && c.warn > 0 && ms <= c.warn * 1000);
+        el.classList.toggle('out', !active && a.turnsLeft[team] === 0);
+        el.querySelector('.num').textContent = s;
+        let info = '';
+        if (active) info = R.paused ? 'PAUSE' : 'schießt';
+        else if (a.turnsLeft[team] === 0) info = 'fertig';
+        else info = 'wartet';
+        el.querySelector('.info').textContent = info;
+      });
+    } else {
+      $('phaseLabel').textContent = phaseLabel;
+      $('phaseSub').textContent = phaseSub;
+      $('bigNum').textContent = big;
+      $('pausedTag').classList.toggle('hidden', !R.paused);
+    }
 
     // Buttons
-    const key = R.phase + '|' + R.paused + '|' + (R.phaseEnd == null);
-    if (key !== lastKey) {
-      lastKey = key;
-      const pauseBtn = $('pauseBtn'), skipBtn = $('skipBtn'), stopBtn = $('stopBtn'), nextBtn = $('nextBtn');
-      pauseBtn.textContent = R.paused ? 'Weiter' : 'Pause';
-      const timed = R.phaseEnd != null || R.paused;
-      pauseBtn.classList.toggle('hidden', R.phase === 'done' || !timed);
-      skipBtn.classList.toggle('hidden', R.phase !== 'shoot' && R.phase !== 'walkup');
-      skipBtn.textContent = R.phase === 'walkup' ? 'Sofort los' : 'Alle fertig';
-      nextBtn.classList.toggle('hidden', R.phase !== 'collect' && R.phase !== 'done');
-      nextBtn.textContent = R.phase === 'done' ? 'Zurück zum Start' : 'Nächste Passe ▶';
-      stopBtn.classList.toggle('hidden', R.phase === 'done');
-    }
+    const show = (id, on) => $(id).classList.toggle('hidden', !on);
+    const timed = R.phaseEnd != null || R.paused;
+    show('pauseBtn', timed && R.phase !== 'done');
+    $('pauseBtn').textContent = R.paused ? 'Weiter' : 'Pause';
+    show('skipBtn', R.phase === 'shoot' || R.phase === 'walkup');
+    $('skipBtn').textContent = R.phase === 'walkup' ? 'Sofort los' : 'Alle fertig';
+    show('stopBtn', R.phase !== 'done');
+    // ohne mittleren Knopf: Pause und Beenden je halbe Breite
+    const twoUp = $('skipBtn').classList.contains('hidden');
+    $('pauseBtn').classList.toggle('half', twoUp && timed);
+    $('stopBtn').classList.toggle('half', twoUp && timed);
+    $('stopBtn').classList.toggle('wide', twoUp && !timed);
+    show('switchBtn', R.phase === 'alt' && !R.paused);
+    show('pickA', R.phase === 'ready');
+    show('pickB', R.phase === 'ready');
+    show('nextBtn', R.phase === 'collect' || R.phase === 'done');
+    $('nextBtn').textContent = R.phase === 'done' ? 'Zurück zum Start' : `${nextUnit()} ▶`;
+    $('nextBtn').classList.toggle('primary', R.phase !== 'done' || !isTeam || R.shootoff);
+    show('soBtn', R.phase === 'done' && isTeam && !R.shootoff);
   }
-  const fmtClock = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 
   $('startBtn').addEventListener('click', startRun);
   $('pauseBtn').addEventListener('click', togglePause);
   $('skipBtn').addEventListener('click', () => { if (!R) return; if (R.phase === 'walkup') startShoot(); else if (R.phase === 'shoot') endShoot(); });
+  $('switchBtn').addEventListener('click', () => { if (R && R.phase === 'alt' && !R.paused) switchTurn(false); });
+  const pick = (team) => () => {
+    if (!R || R.phase !== 'ready') return;
+    if (R.alt && !R.shootoff) R.endIdx++;   // nach einem Satz: nächster Satz
+    pickStarter(team);
+  };
+  $('pickA').addEventListener('click', pick('A'));
+  $('pickB').addEventListener('click', pick('B'));
   $('nextBtn').addEventListener('click', () => { if (!R) return; if (R.phase === 'done') stopRun(); else nextEnd(); });
+  $('soBtn').addEventListener('click', () => { if (R && R.phase === 'done') startShootoff(); });
   $('stopBtn').addEventListener('click', () => { if (confirm('Durchgang wirklich beenden?')) stopRun(); });
 
   document.addEventListener('visibilitychange', () => {
@@ -429,12 +579,13 @@
 
   renderSetup();
 
-  // Offline-Unterstützung
+  // ------------------------------------------------------------------
+  // Offline-Unterstützung & automatische Updates
+  // ------------------------------------------------------------------
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then((reg) => {
         reg.update().catch(() => {});
-        // Beim Zurückholen der App nach neuer Version schauen
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); });
       }).catch(() => {});
     });
