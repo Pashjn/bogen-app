@@ -60,6 +60,9 @@
   .brand { display: flex; align-items: center; gap: 12px; position: relative; z-index: 2; }
   .brand img { width: 44px; height: 44px; border-radius: 6px; background: #fff; }
   .brand span { color: var(--orange); font-weight: 500; font-size: 17px; }
+  .lang { margin-left: auto; display: flex; gap: 2px; background: rgba(0,0,0,.35); border-radius: 999px; padding: 3px; }
+  .lang button { padding: 7px 10px; border-radius: 999px; background: transparent; color: #cfcfcf; font-size: 13px; font-weight: 700; letter-spacing: .04em; }
+  .lang button.on { background: var(--orange); color: #111; }
   .hero-text { position: relative; z-index: 2; max-width: 62%; margin-top: 34px; }
   .eyebrow { color: var(--orange); font-size: 12px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; }
   .hero h1 { font-size: clamp(36px, 11vw, 60px); font-weight: 900; line-height: 1.02; margin: 10px 0 10px; letter-spacing: -.01em; }
@@ -176,49 +179,50 @@
 <!-- ================= EINSTELLUNGEN ================= -->
 <main id="setup">
   <header class="hero">
-    <div class="brand"><img src="img/club-logo.png" alt=""><span>Arrowclub Dudelange</span></div>
+    <div class="brand"><img src="img/club-logo.png" alt=""><span>Arrowclub Dudelange</span>
+      <div class="lang" id="langSeg"><button data-v="en">EN</button><button data-v="de">DE</button><button data-v="fr">FR</button></div></div>
     <div class="hero-text">
-      <div class="eyebrow">World Archery · Timer</div>
+      <div class="eyebrow" data-i18n="eyebrow">World Archery · Timer</div>
       <h1>Archery Timer</h1>
-      <p>Signals, lights and countdown – just like at a tournament.</p>
+      <p data-i18n="tagline">Signals, lights and countdown – just like at a tournament.</p>
     </div>
     <img class="mascot" src="img/geier-recurve.webp" alt="">
   </header>
 
   <div class="content">
-    <div class="label">Event</div>
+    <div class="label" data-i18n="event">Event</div>
     <div class="pills" id="presetSeg">
-      <button data-v="indoor">Indoor 18 m</button>
-      <button data-v="outdoor">Outdoor</button>
-      <button data-v="team">Team (3)</button>
-      <button data-v="mixed">Mixed (2)</button>
+      <button data-v="indoor" data-i18n="p_indoor">Indoor 18 m</button>
+      <button data-v="outdoor" data-i18n="p_outdoor">Outdoor</button>
+      <button data-v="team" data-i18n="p_team">Team (3)</button>
+      <button data-v="mixed" data-i18n="p_mixed">Mixed (2)</button>
     </div>
 
     <div id="modeBox">
-      <div class="label">Shooting order</div>
+      <div class="label" data-i18n="order">Shooting order</div>
       <div class="pills" id="modeSeg">
-        <button data-v="sim">Simultaneous</button>
-        <button data-v="alt">Alternating</button>
+        <button data-v="sim" data-i18n="m_sim">Simultaneous</button>
+        <button data-v="alt" data-i18n="m_alt">Alternating</button>
       </div>
       <p class="seg-hint" id="modeHint"></p>
     </div>
 
-    <div class="label">Rules (World Archery)</div>
+    <div class="label" data-i18n="rules">Rules (World Archery)</div>
     <div class="card" id="rules"></div>
 
-    <button class="btn-start" id="startBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>Start</button>
-    <button class="btn-so" id="soStartBtn">🏆 Shoot-off</button>
-    <button class="btn-ghost" id="testBtn">🔊 Test signal</button>
+    <button class="btn-start" id="startBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg><span data-i18n="start">Start</span></button>
+    <button class="btn-so" id="soStartBtn">🏆 <span data-i18n="shootoff">Shoot-off</span></button>
+    <button class="btn-ghost" id="testBtn">🔊 <span data-i18n="test">Test signal</span></button>
 
-    <p class="tip">
+    <p class="tip" data-i18n-html="tip">
       <b>Signals:</b> 2× = walk to the line · 1× = start shooting · 3× = collect arrows.<br>
       The screen stays on during a round. Use the iPhone volume buttons to adjust the volume.
       Works completely offline.
     </p>
 
-    <div class="footer"><img src="img/club-logo.png" alt=""><span>Arrowclub Dudelange · since 1957</span><span class="ver" id="versionLabel">alpha v1.1</span></div>
+    <div class="footer"><img src="img/club-logo.png" alt=""><span>Arrowclub Dudelange · <span data-i18n="since">since 1957</span></span><span class="ver" id="versionLabel">alpha v1.2</span></div>
   </div>
-  <div id="updateNote" class="update-note hidden">Loading new version …</div>
+  <div id="updateNote" class="update-note hidden" data-i18n="updating">Loading new version …</div>
 </main>
 
 <!-- ================= TIMER ================= -->
@@ -232,19 +236,19 @@
     <div class="phase" id="phaseLabel"></div>
     <img class="scene hidden" id="sceneImg" alt="">
     <div class="big" id="bigNum"></div>
-    <div class="paused-tag hidden" id="pausedTag">PAUSED</div>
+    <div class="paused-tag hidden" id="pausedTag" data-i18n="paused">PAUSED</div>
     <img class="scene small hidden" id="pauseImg" src="img/geier-siesta.webp" alt="">
     <div class="phase-sub" id="phaseSub"></div>
   </div>
 
   <div class="clocks hidden" id="altView">
-    <div class="clock" id="clockA"><div class="name">Team A</div><div class="num">0</div><div class="info"></div></div>
-    <div class="clock" id="clockB"><div class="name">Team B</div><div class="num">0</div><div class="info"></div></div>
+    <div class="clock" id="clockA"><div class="name" data-i18n="teamA">Team A</div><div class="num">0</div><div class="info"></div></div>
+    <div class="clock" id="clockB"><div class="name" data-i18n="teamB">Team B</div><div class="num">0</div><div class="info"></div></div>
   </div>
 
   <div class="controls">
-    <button class="wide primary hidden" id="switchBtn">Switch ▶</button>
-    <button class="wide primary hidden" id="againBtn">▶ Again</button>
+    <button class="wide primary hidden" id="switchBtn" data-i18n="switch">Switch ▶</button>
+    <button class="wide primary hidden" id="againBtn" data-i18n="again">▶ Again</button>
     <button id="pauseBtn">Pause</button>
     <button id="skipBtn">All done</button>
     <button id="stopBtn">Stop</button>
@@ -267,17 +271,97 @@
   };
   const DEFAULTS = { preset: 'indoor', mode: 'sim' };
   const STORE_KEY = 'bogen-timer-settings-v3';
-  const APP_VERSION = 8;   // Build-Nummer: bei jeder Änderung +1 (auch version.json + sw.js)
-  const APP_LABEL = 'alpha v1.1';
+  const APP_VERSION = 9;   // Build-Nummer: bei jeder Änderung +1 (auch version.json + sw.js)
+  const APP_LABEL = 'alpha v1.2';
 
   let S = Object.assign({}, DEFAULTS);
   try { Object.assign(S, JSON.parse(localStorage.getItem(STORE_KEY) || '{}')); } catch (e) {}
   if (!PRESETS[S.preset]) S.preset = 'indoor';
   if (S.mode !== 'alt') S.mode = 'sim';
+  if (!['en', 'de', 'fr'].includes(S.lang)) {
+    const nav = (navigator.language || 'en').slice(0, 2).toLowerCase();
+    S.lang = ['de', 'fr'].includes(nav) ? nav : 'en';
+  }
   const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {} };
 
   const $ = (id) => document.getElementById(id);
   const fmtSec = (s) => s >= 60 && s % 60 === 0 ? (s / 60) + ' min' : s + ' s';
+
+
+  // ------------------------------------------------------------------
+  // Sprachen (EN / DE / FR)
+  // ------------------------------------------------------------------
+  const pl = (n, one, many) => n === 1 ? one : many;
+  const I18N = {
+    en: {
+      eyebrow: 'World Archery · Timer', tagline: 'Signals, lights and countdown – just like at a tournament.',
+      event: 'Event', order: 'Shooting order', rules: 'Rules (World Archery)',
+      p_indoor: 'Indoor 18 m', p_outdoor: 'Outdoor', p_team: 'Team (3)', p_mixed: 'Mixed (2)',
+      m_sim: 'Simultaneous', m_alt: 'Alternating',
+      start: 'Start', shootoff: 'Shoot-off', test: 'Test signal',
+      tip: '<b>Signals:</b> 2× = walk to the line · 1× = start shooting · 3× = collect arrows.<br>The screen stays on during a round. Use the iPhone volume buttons to adjust the volume. Works completely offline.',
+      since: 'since 1957', updating: 'Loading new version …',
+      teamA: 'Team A', teamB: 'Team B', paused: 'PAUSED', switch: 'Switch ▶', again: '▶ Again',
+      r_members: 'Archers per team', r_arrows: 'Arrows', r_per: '(2 per archer)',
+      r_time: 'Shooting time', r_timeTeam: 'Shooting time per team', r_switch: 'Switch after',
+      r_prep: 'Preparation (red)', r_yellow: 'Yellow at', r_left: (t) => `${t} left`, r_so: 'Shoot-off',
+      arrows: (n) => `${n} ${pl(n, 'arrow', 'arrows')}`, arrowsIn: (n, t) => `${n} ${pl(n, 'arrow', 'arrows')} in ${t}`, perTeam: ' per team',
+      hintAlt: (n, t) => `Like in finals: Team A shoots ${n} arrows, then Team B – each team has its own clock with ${t}.`,
+      hintSim: 'Both teams shoot at the same time.',
+      walk: 'Walk to the line', aStarts: 'Team A starts', shoot: (n) => `Shoot – ${n} ${pl(n, 'arrow', 'arrows')}`, collect: 'Collect arrows',
+      shooting: 'shooting', done: 'done', waiting: 'waiting',
+      pause: 'Pause', resume: 'Resume', startNow: 'Start now', allDone: 'All done', stop: 'Stop', back: 'Back',
+      confirmStop: 'Stop this round?', sufAlt: ' · alternating', sufSo: ' · Shoot-off',
+    },
+    de: {
+      eyebrow: 'World Archery · Timer', tagline: 'Signale, Ampel und Countdown – wie im Turnier.',
+      event: 'Wettkampf', order: 'Schießablauf', rules: 'Regeln (World Archery)',
+      p_indoor: 'Halle 18 m', p_outdoor: 'Freiluft', p_team: 'Team (3)', p_mixed: 'Mixed (2)',
+      m_sim: 'Gleichzeitig', m_alt: 'Abwechselnd',
+      start: 'Start', shootoff: 'Stechen', test: 'Signal testen',
+      tip: '<b>Signale:</b> 2× = zur Schießlinie · 1× = Schießen · 3× = Pfeile holen.<br>Der Bildschirm bleibt während der Runde an. Lautstärke mit den iPhone-Tasten regeln. Funktioniert komplett ohne Internet.',
+      since: 'seit 1957', updating: 'Neue Version wird geladen …',
+      teamA: 'Team A', teamB: 'Team B', paused: 'PAUSE', switch: 'Wechsel ▶', again: '▶ Nochmal',
+      r_members: 'Schützen pro Team', r_arrows: 'Pfeile', r_per: '(2 je Schütze)',
+      r_time: 'Schießzeit', r_timeTeam: 'Schießzeit je Team', r_switch: 'Wechsel nach',
+      r_prep: 'Vorbereitung (rot)', r_yellow: 'Gelb ab', r_left: (t) => `${t} Restzeit`, r_so: 'Stechen',
+      arrows: (n) => `${n} ${pl(n, 'Pfeil', 'Pfeilen')}`, arrowsIn: (n, t) => `${n} ${pl(n, 'Pfeil', 'Pfeile')} in ${t}`, perTeam: ' je Team',
+      hintAlt: (n, t) => `Wie im Finale: Team A schießt ${n} Pfeile, dann Team B – jedes Team hat seine eigene Uhr mit ${t}.`,
+      hintSim: 'Beide Teams schießen gleichzeitig.',
+      walk: 'Zur Schießlinie', aStarts: 'Team A beginnt', shoot: (n) => `Schießen – ${n} ${pl(n, 'Pfeil', 'Pfeile')}`, collect: 'Pfeile holen',
+      shooting: 'schießt', done: 'fertig', waiting: 'wartet',
+      pause: 'Pause', resume: 'Weiter', startNow: 'Sofort los', allDone: 'Alle fertig', stop: 'Abbrechen', back: 'Zurück',
+      confirmStop: 'Runde wirklich abbrechen?', sufAlt: ' · abwechselnd', sufSo: ' · Stechen',
+    },
+    fr: {
+      eyebrow: 'World Archery · Chrono', tagline: 'Signaux, feux et compte à rebours – comme en compétition.',
+      event: 'Épreuve', order: 'Ordre de tir', rules: 'Règles (World Archery)',
+      p_indoor: 'Salle 18 m', p_outdoor: 'Extérieur', p_team: 'Équipe (3)', p_mixed: 'Mixte (2)',
+      m_sim: 'Simultané', m_alt: 'Alterné',
+      start: 'Démarrer', shootoff: 'Barrage', test: 'Tester le signal',
+      tip: '<b>Signaux :</b> 2× = avancer sur la ligne · 1× = début du tir · 3× = retrait des flèches.<br>L’écran reste allumé pendant la volée. Réglez le volume avec les boutons de l’iPhone. Fonctionne entièrement hors ligne.',
+      since: 'depuis 1957', updating: 'Chargement de la nouvelle version …',
+      teamA: 'Équipe A', teamB: 'Équipe B', paused: 'PAUSE', switch: 'Changer ▶', again: '▶ Encore',
+      r_members: 'Archers par équipe', r_arrows: 'Flèches', r_per: '(2 par archer)',
+      r_time: 'Temps de tir', r_timeTeam: 'Temps de tir par équipe', r_switch: 'Changement après',
+      r_prep: 'Préparation (rouge)', r_yellow: 'Jaune à', r_left: (t) => `${t} restantes`, r_so: 'Barrage',
+      arrows: (n) => `${n} ${pl(n, 'flèche', 'flèches')}`, arrowsIn: (n, t) => `${n} ${pl(n, 'flèche', 'flèches')} en ${t}`, perTeam: ' par équipe',
+      hintAlt: (n, t) => `Comme en finale : l’équipe A tire ${n} flèches, puis l’équipe B – chaque équipe a son propre chrono de ${t}.`,
+      hintSim: 'Les deux équipes tirent en même temps.',
+      walk: 'Avancez sur la ligne', aStarts: 'L’équipe A commence', shoot: (n) => `Tirez – ${n} ${pl(n, 'flèche', 'flèches')}`, collect: 'Retrait des flèches',
+      shooting: 'tire', done: 'terminé', waiting: 'attend',
+      pause: 'Pause', resume: 'Reprendre', startNow: 'Commencer', allDone: 'Tir terminé', stop: 'Arrêter', back: 'Retour',
+      confirmStop: 'Arrêter cette volée ?', sufAlt: ' · alterné', sufSo: ' · barrage',
+    },
+  };
+  const T = (key, ...args) => { const v = (I18N[S.lang] || I18N.en)[key]; return typeof v === 'function' ? v(...args) : v; };
+
+  function applyLang() {
+    document.documentElement.lang = S.lang;
+    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = T(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = T(el.dataset.i18nHtml); });
+    document.querySelectorAll('#langSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === S.lang));
+  }
 
   const config = () => {
     const p = PRESETS[S.preset];
@@ -289,21 +373,21 @@
     const isTeam = p.kind === 'team';
     const alt = isTeam && S.mode === 'alt';
     const rows = [
-      ...(isTeam ? [['Archers per team', p.members]] : []),
-      ['Arrows', isTeam ? `${p.arrows} (2 per archer)` : p.arrows],
-      [alt ? 'Shooting time per team' : 'Shooting time', fmtSec(p.shoot)],
-      ...(alt ? [['Switch after', `${p.perTurn} arrows`]] : []),
-      ['Preparation (red)', fmtSec(p.prep)],
-      ['Yellow at', `${fmtSec(p.warn)} left`],
-      ['Shoot-off', `${p.soArrows} arrow${p.soArrows > 1 ? 's' : ''} in ${fmtSec(p.soShoot)}${alt ? ' per team' : ''}`],
+      ...(isTeam ? [[T('r_members'), p.members]] : []),
+      [T('r_arrows'), isTeam ? `${p.arrows} ${T('r_per')}` : p.arrows],
+      [alt ? T('r_timeTeam') : T('r_time'), fmtSec(p.shoot)],
+      ...(alt ? [[T('r_switch'), T('arrows', p.perTurn)]] : []),
+      [T('r_prep'), fmtSec(p.prep)],
+      [T('r_yellow'), T('r_left', fmtSec(p.warn))],
+      [T('r_so'), T('arrowsIn', p.soArrows, fmtSec(p.soShoot)) + (alt ? T('perTeam') : '')],
     ];
     $('rules').innerHTML = rows.map(([t, v]) => `<div class="row"><div class="t">${t}</div><div class="v">${v}</div></div>`).join('');
     document.querySelectorAll('#presetSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === S.preset));
     document.querySelectorAll('#modeSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === S.mode));
     $('modeBox').classList.toggle('hidden', !isTeam);
     $('modeHint').textContent = alt
-      ? `Like in finals: Team A shoots ${p.perTurn} arrows, then Team B – each team has its own clock with ${fmtSec(p.shoot)}.`
-      : `Both teams shoot at the same time.`;
+      ? T('hintAlt', p.perTurn, fmtSec(p.shoot))
+      : T('hintSim');
   }
 
   document.querySelectorAll('#presetSeg button').forEach(b => b.addEventListener('click', () => { S.preset = b.dataset.v; save(); renderSetup(); }));
@@ -470,14 +554,14 @@
     let phaseLabel = '', phaseSub = '', big = String(secs);
     switch (R.phase) {
       case 'walkup':
-        phaseLabel = 'Walk to the line';
-        if (c.alt) phaseSub = 'Team A starts';
+        phaseLabel = T('walk');
+        if (c.alt) phaseSub = T('aStarts');
         break;
       case 'shoot':
-        phaseLabel = `Shoot – ${c.arrows} arrow${c.arrows > 1 ? 's' : ''}`;
+        phaseLabel = T('shoot', c.arrows);
         break;
       case 'collect':
-        phaseLabel = 'Collect arrows';
+        phaseLabel = T('collect');
         big = '';
         break;
     }
@@ -485,7 +569,7 @@
     const t = $('timer');
     t.dataset.phase = visPhase === 'collect' ? 'collect' : visPhase;
     t.classList.toggle('paused', R.paused);
-    $('endLabel').textContent = c.name + (c.so ? ' · Shoot-off' : '') + (c.alt ? ' · alternating' : '');
+    $('endLabel').textContent = T('p_' + S.preset) + (c.so ? T('sufSo') : '') + (c.alt ? T('sufAlt') : '');
 
     const showClocks = R.phase === 'alt';
     $('singleView').classList.toggle('hidden', showClocks);
@@ -501,7 +585,7 @@
         el.classList.toggle('warn', active && c.warn > 0 && ms <= c.warn * 1000);
         el.classList.toggle('out', !active && a.turnsLeft[team] === 0);
         el.querySelector('.num').textContent = Math.ceil(ms / 1000);
-        el.querySelector('.info').textContent = active ? (R.paused ? 'PAUSED' : 'shooting') : (a.turnsLeft[team] === 0 ? 'done' : 'waiting');
+        el.querySelector('.info').textContent = active ? (R.paused ? T('paused') : T('shooting')) : (a.turnsLeft[team] === 0 ? T('done') : T('waiting'));
       });
     } else {
       $('phaseLabel').textContent = phaseLabel;
@@ -521,12 +605,12 @@
     const timed = R.phaseEnd != null || R.paused;
     const collect = R.phase === 'collect';
     show('pauseBtn', timed);
-    $('pauseBtn').textContent = R.paused ? 'Resume' : 'Pause';
+    $('pauseBtn').textContent = R.paused ? T('resume') : T('pause');
     show('skipBtn', R.phase === 'shoot' || R.phase === 'walkup');
-    $('skipBtn').textContent = R.phase === 'walkup' ? 'Start now' : 'All done';
+    $('skipBtn').textContent = R.phase === 'walkup' ? T('startNow') : T('allDone');
     show('switchBtn', R.phase === 'alt' && !R.paused);
     show('againBtn', collect);
-    $('stopBtn').textContent = collect ? 'Back' : 'Stop';
+    $('stopBtn').textContent = collect ? T('back') : T('stop');
     const twoUp = $('skipBtn').classList.contains('hidden');
     $('pauseBtn').classList.toggle('half', twoUp && timed);
     $('stopBtn').classList.toggle('half', twoUp && timed);
@@ -541,13 +625,15 @@
   $('switchBtn').addEventListener('click', () => { if (R && R.phase === 'alt' && !R.paused) switchTurn(false); });
   $('stopBtn').addEventListener('click', () => {
     if (!R) return;
-    if (R.phase === 'collect' || confirm('Stop this round?')) stopRun();
+    if (R.phase === 'collect' || confirm(T('confirmStop'))) stopRun();
   });
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && R) { if (R.phase !== 'collect') keepAwake(); if (ctx && ctx.state !== 'running') ctx.resume(); render(); }
   });
 
+  document.querySelectorAll('#langSeg button').forEach(b => b.addEventListener('click', () => { S.lang = b.dataset.v; save(); applyLang(); renderSetup(); }));
+  applyLang();
   renderSetup();
   $('versionLabel').textContent = APP_LABEL;
 
