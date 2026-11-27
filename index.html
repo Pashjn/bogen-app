@@ -116,7 +116,10 @@
   #timer[data-phase="walkup"] { background: var(--red); }
   #timer[data-phase="shoot"]  { background: var(--green); }
   #timer[data-phase="warn"]   { background: var(--yellow); color: #111; }
-  #timer[data-phase="collect"], #timer[data-phase="alt"] { background: var(--bg); }
+  #timer[data-phase="collect"], #timer[data-phase="alt"], #timer[data-phase="ready"] { background: var(--bg); }
+  #timer[data-phase="ready"] .big, #timer[data-phase="ready"] .phase { color: var(--orange); }
+  #timer[data-phase="ready"] .end-info { color: var(--orange); }
+  #timer[data-phase="ready"] .controls button { background: transparent; border: 2px solid #4a4a4a; color: #fff; }
   #timer.paused .big, #timer.paused .clock .num { opacity: .45; }
 
   .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
@@ -219,7 +222,7 @@
       The screen stays on during a round. Set the volume with the iPhone buttons. No internet needed.
     </p>
 
-    <div class="footer"><img src="img/club-logo.png" alt=""><span>Arrowclub Dudelange · <span data-i18n="since">since 1957</span></span><span class="ver" id="versionLabel">alpha v1.3</span></div>
+    <div class="footer"><img src="img/club-logo.png" alt=""><span>Arrowclub Dudelange · <span data-i18n="since">since 1957</span></span><span class="ver" id="versionLabel">alpha v1.4</span></div>
   </div>
   <div id="updateNote" class="update-note hidden" data-i18n="updating">Loading new version …</div>
 </main>
@@ -270,8 +273,8 @@
   };
   const DEFAULTS = { preset: 'indoor', mode: 'sim' };
   const STORE_KEY = 'bogen-timer-settings-v3';
-  const APP_VERSION = 10;   // Build-Nummer: bei jeder Änderung +1 (auch version.json + sw.js)
-  const APP_LABEL = 'alpha v1.3';
+  const APP_VERSION = 11;   // Build-Nummer: bei jeder Änderung +1 (auch version.json + sw.js)
+  const APP_LABEL = 'alpha v1.4';
 
   let S = Object.assign({}, DEFAULTS);
   try { Object.assign(S, JSON.parse(localStorage.getItem(STORE_KEY) || '{}')); } catch (e) {}
@@ -307,6 +310,7 @@
       arrows: (n) => `${n} ${pl(n, 'arrow', 'arrows')}`, arrowsIn: (n, t) => `${n} ${pl(n, 'arrow', 'arrows')} in ${t}`, perTeam: ' per team',
       hintAlt: (n, t) => `Like in finals: Team A shoots ${n} arrows, then Team B. Each team has its own ${t} clock, which only runs while that team is shooting.`,
       hintSim: 'Both teams shoot at the same time.',
+      getReady: 'Get ready', getReadySub: 'Put the phone down and grab your bow',
       walk: 'Walk to the line', aStarts: 'Team A starts', shoot: (n) => `Shoot ${n} ${pl(n, 'arrow', 'arrows')}`, collect: 'Collect arrows',
       shooting: 'shooting', done: 'done', waiting: 'waiting',
       pause: 'Pause', resume: 'Resume', startNow: 'Start now', allDone: 'All done', stop: 'Stop', back: 'Back',
@@ -327,6 +331,7 @@
       arrows: (n) => `${n} ${pl(n, 'Pfeil', 'Pfeilen')}`, arrowsIn: (n, t) => `${n} ${pl(n, 'Pfeil', 'Pfeile')} in ${t}`, perTeam: ' je Team',
       hintAlt: (n, t) => `Wie im Finale: Team A schießt ${n} Pfeile, dann Team B. Jedes Team hat eine eigene Uhr mit ${t}, die nur läuft, solange es selbst schießt.`,
       hintSim: 'Beide Teams schießen gleichzeitig.',
+      getReady: 'Mach dich bereit', getReadySub: 'Handy ablegen, Bogen nehmen',
       walk: 'Zur Schießlinie', aStarts: 'Team A beginnt', shoot: (n) => `${n} ${pl(n, 'Pfeil', 'Pfeile')} schießen`, collect: 'Pfeile holen',
       shooting: 'schießt', done: 'fertig', waiting: 'wartet',
       pause: 'Pause', resume: 'Weiter', startNow: 'Sofort los', allDone: 'Alle fertig', stop: 'Abbrechen', back: 'Zurück',
@@ -347,6 +352,7 @@
       arrows: (n) => `${n} ${pl(n, 'flèche', 'flèches')}`, arrowsIn: (n, t) => `${n} ${pl(n, 'flèche', 'flèches')} en ${t}`, perTeam: ' par équipe',
       hintAlt: (n, t) => `Comme en finale : l’équipe A tire ${n} flèches, puis l’équipe B. Chaque équipe a son propre chrono de ${t}, qui ne tourne que pendant qu’elle tire.`,
       hintSim: 'Les deux équipes tirent en même temps.',
+      getReady: 'Préparez-vous', getReadySub: 'Posez le téléphone et prenez votre arc',
       walk: 'Avancez sur la ligne', aStarts: 'L’équipe A commence', shoot: (n) => `Tirez ${n} ${pl(n, 'flèche', 'flèches')}`, collect: 'Retrait des flèches',
       shooting: 'tire', done: 'terminé', waiting: 'attend',
       pause: 'Pause', resume: 'Reprendre', startNow: 'Commencer', allDone: 'Tir terminé', stop: 'Arrêter', back: 'Retour',
@@ -436,6 +442,16 @@
     for (let i = 0; i < count; i++) { blast(t, dur); t += dur + gap; }
   }
 
+  // kurzer, leiser Piep (klar anders als das Horn)
+  function tick() {
+    if (!ctx) return;
+    if (ctx.state !== 'running') ctx.resume();
+    const t = ctx.currentTime + 0.02, o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = 1320;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.25, t + 0.01); g.gain.linearRampToValueAtTime(0, t + 0.12);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.15);
+  }
+
   $('testBtn').addEventListener('click', () => { unlockAudio(); horn(1); });
 
   // ------------------------------------------------------------------
@@ -455,6 +471,7 @@
   let R = null;
   const now = () => Date.now();
   const other = (t) => t === 'A' ? 'B' : 'A';
+  const READY_SECS = 5;
 
   function startRun(shootoff) {
     unlockAudio();
@@ -468,8 +485,9 @@
     }
     $('setup').classList.add('hidden');
     $('timer').classList.remove('hidden');
-    horn(2);
-    setPhase('walkup', R.cfg.prep);
+    // 5 s "Mach dich bereit" (Handy ablegen, Bogen nehmen), dann WA-Ablauf
+    R.lastTick = null;
+    setPhase('ready', READY_SECS);
     loop();
   }
 
@@ -507,8 +525,14 @@
     setPhase('collect', null);
   }
 
+  function beginWalkup() {
+    horn(2);
+    setPhase('walkup', R.cfg.prep);
+  }
+
   function advance() {
-    if (R.phase === 'walkup') startShoot();
+    if (R.phase === 'ready') beginWalkup();
+    else if (R.phase === 'walkup') startShoot();
     else if (R.phase === 'shoot') endShoot();
     else if (R.phase === 'alt') switchTurn(true);
   }
@@ -534,6 +558,10 @@
     loopTimer = setInterval(() => {
       if (!R) return clearInterval(loopTimer);
       if (!R.paused && R.phaseEnd != null && now() >= R.phaseEnd) advance();
+      else if (R.phase === 'ready' && !R.paused && R.phaseEnd != null) {
+        const sec = Math.ceil((R.phaseEnd - now()) / 1000);
+        if (sec !== R.lastTick && sec >= 1 && sec <= 3) { R.lastTick = sec; tick(); }
+      }
       render();
     }, 100);
   }
@@ -552,6 +580,10 @@
 
     let phaseLabel = '', phaseSub = '', big = String(secs);
     switch (R.phase) {
+      case 'ready':
+        phaseLabel = T('getReady');
+        phaseSub = T('getReadySub');
+        break;
       case 'walkup':
         phaseLabel = T('walk');
         if (c.alt) phaseSub = T('aStarts');
@@ -605,8 +637,8 @@
     const collect = R.phase === 'collect';
     show('pauseBtn', timed);
     $('pauseBtn').textContent = R.paused ? T('resume') : T('pause');
-    show('skipBtn', R.phase === 'shoot' || R.phase === 'walkup');
-    $('skipBtn').textContent = R.phase === 'walkup' ? T('startNow') : T('allDone');
+    show('skipBtn', R.phase === 'shoot' || R.phase === 'walkup' || R.phase === 'ready');
+    $('skipBtn').textContent = R.phase === 'shoot' ? T('allDone') : T('startNow');
     show('switchBtn', R.phase === 'alt' && !R.paused);
     show('againBtn', collect);
     $('stopBtn').textContent = collect ? T('back') : T('stop');
@@ -620,7 +652,7 @@
   $('soStartBtn').addEventListener('click', () => startRun(true));
   $('againBtn').addEventListener('click', () => startRun(R && R.cfg.so));
   $('pauseBtn').addEventListener('click', togglePause);
-  $('skipBtn').addEventListener('click', () => { if (!R) return; if (R.phase === 'walkup') startShoot(); else if (R.phase === 'shoot') endShoot(); });
+  $('skipBtn').addEventListener('click', () => { if (!R) return; if (R.phase === 'ready') beginWalkup(); else if (R.phase === 'walkup') startShoot(); else if (R.phase === 'shoot') endShoot(); });
   $('switchBtn').addEventListener('click', () => { if (R && R.phase === 'alt' && !R.paused) switchTurn(false); });
   $('stopBtn').addEventListener('click', () => {
     if (!R) return;
