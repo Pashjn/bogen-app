@@ -2,7 +2,7 @@
 // Online: immer zuerst die neueste Version vom Server holen.
 // Offline: gespeicherte Version verwenden.
 // Bei Änderungen VERSION erhöhen.
-const VERSION = 'v4';
+const VERSION = 'v5';
 const CACHE = 'bogen-timer-' + VERSION;
 const FILES = ['./', './index.html', './manifest.webmanifest', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png'];
 

@@ -63,6 +63,8 @@
   .row .v { font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
   .btn-start { display: block; width: 100%; margin-top: 22px; padding: 18px; border-radius: 16px; background: var(--green); font-size: 21px; font-weight: 700; color: #fff; }
   .btn-start:active { filter: brightness(1.12); }
+  .btn-so { display: block; width: 100%; margin-top: 10px; padding: 16px; border-radius: 16px; background: var(--accent); color: #111; font-size: 19px; font-weight: 700; }
+  .btn-so:active { filter: brightness(1.08); }
   .btn-ghost { display: block; width: 100%; margin-top: 10px; padding: 14px; border-radius: 14px; background: var(--card); font-size: 16px; font-weight: 600; }
   .tip { color: var(--muted); font-size: 13px; line-height: 1.5; margin: 18px 4px 0; }
 
@@ -160,20 +162,21 @@
   <div class="card" id="rules"></div>
 
   <button class="btn-start" id="startBtn">▶ Start</button>
+  <button class="btn-so" id="soStartBtn">🎯 Shoot-off</button>
   <button class="btn-ghost" id="testBtn">🔊 Signal testen</button>
 
   <p class="tip">
     <b>Signale:</b> 2× = zur Schießlinie · 1× = Schießen · 3× = Pfeile holen.<br>
-    Der Bildschirm bleibt während des Ablaufs an. Lautstärke mit den iPhone-Tasten regeln.
+    Der Bildschirm bleibt während der Runde an. Lautstärke mit den iPhone-Tasten regeln.
     Funktioniert komplett ohne Internet.
   </p>
-  <p class="tip" style="opacity:.6">Version 4</p>
+  <p class="tip" style="opacity:.6">Version 5</p>
 </main>
 
 <!-- ================= TIMER ================= -->
 <section id="timer" class="hidden" data-phase="walkup">
   <div class="top">
-    <div class="end-info"><span id="endLabel"></span><small id="endSub"></small></div>
+    <div class="end-info"><span id="endLabel"></span></div>
   </div>
 
   <div class="mid" id="singleView">
@@ -190,10 +193,7 @@
 
   <div class="controls">
     <button class="wide primary hidden" id="switchBtn">Wechsel ▶</button>
-    <button class="half primary hidden" id="pickA">Team A beginnt</button>
-    <button class="half primary hidden" id="pickB">Team B beginnt</button>
-    <button class="wide primary hidden" id="nextBtn">Nächste Passe ▶</button>
-    <button class="wide primary hidden" id="soBtn">Stechen ▶</button>
+    <button class="wide primary hidden" id="againBtn">▶ Nochmal</button>
     <button id="pauseBtn">Pause</button>
     <button id="skipBtn">Alle fertig</button>
     <button id="stopBtn">Beenden</button>
@@ -208,11 +208,11 @@
   // Regeln (fest nach World Archery)
   // ------------------------------------------------------------------
   const PRESETS = {
-    indoor:  { kind: 'qual', arrows: 3, shoot: 120, prep: 10, warn: 30, practice: 2, ends: 20 },
-    outdoor: { kind: 'qual', arrows: 6, shoot: 240, prep: 10, warn: 30, practice: 2, ends: 12 },
-    // Team-Matches: Sätze, Stechen; perTurn = Pfeile pro Durchgang beim abwechselnden Schießen
-    team:    { kind: 'team', members: 3, arrows: 6, perTurn: 3, shoot: 120, prep: 10, warn: 30, practice: 0, ends: 4, soArrows: 3, soShoot: 60 },
-    mixed:   { kind: 'team', members: 2, arrows: 4, perTurn: 2, shoot: 80,  prep: 10, warn: 30, practice: 0, ends: 4, soArrows: 2, soShoot: 40 },
+    indoor:  { name: 'Halle 18 m',  kind: 'qual', arrows: 3, shoot: 120, prep: 10, warn: 30, soArrows: 1, soShoot: 40 },
+    outdoor: { name: 'Freiluft',    kind: 'qual', arrows: 6, shoot: 240, prep: 10, warn: 30, soArrows: 1, soShoot: 40 },
+    // perTurn = Pfeile pro Durchgang beim abwechselnden Schießen
+    team:    { name: 'Team (3er)',  kind: 'team', members: 3, arrows: 6, perTurn: 3, shoot: 120, prep: 10, warn: 30, soArrows: 3, soShoot: 60 },
+    mixed:   { name: 'Mixed (2er)', kind: 'team', members: 2, arrows: 4, perTurn: 2, shoot: 80,  prep: 10, warn: 30, soArrows: 2, soShoot: 40 },
   };
   const DEFAULTS = { preset: 'indoor', mode: 'sim' };
   const STORE_KEY = 'bogen-timer-settings-v3';
@@ -225,7 +225,6 @@
 
   const $ = (id) => document.getElementById(id);
   const fmtSec = (s) => s >= 60 && s % 60 === 0 ? (s / 60) + ' min' : s + ' s';
-  const fmtClock = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 
   const config = () => {
     const p = PRESETS[S.preset];
@@ -236,35 +235,22 @@
     const p = PRESETS[S.preset];
     const isTeam = p.kind === 'team';
     const alt = isTeam && S.mode === 'alt';
-    let rows;
-    if (!isTeam) {
-      rows = [
-        ['Pfeile pro Passe', p.arrows],
-        ['Schießzeit', fmtSec(p.shoot)],
-        ['Vorbereitung (rot)', fmtSec(p.prep)],
-        ['Gelb ab Restzeit', fmtSec(p.warn)],
-        ['Passen', `${p.practice} Probe + ${p.ends} Wertung`],
-        ['Wertungspfeile', p.ends * p.arrows],
-      ];
-    } else {
-      rows = [
-        ['Schützen pro Team', p.members],
-        ['Pfeile pro Satz', `${p.arrows} (2 je Schütze)`],
-        [alt ? 'Schießzeit je Team' : 'Schießzeit', fmtSec(p.shoot)],
-        ...(alt ? [['Wechsel nach', `${p.perTurn} Pfeilen`]] : []),
-        ['Vorbereitung (rot)', fmtSec(p.prep)],
-        ['Gelb ab Restzeit', fmtSec(p.warn)],
-        ['Sätze', `bis zu ${p.ends}`],
-        ['Stechen', `${p.soArrows} Pfeile in ${fmtSec(p.soShoot)}`],
-      ];
-    }
+    const rows = [
+      ...(isTeam ? [['Schützen pro Team', p.members]] : []),
+      ['Pfeile', isTeam ? `${p.arrows} (2 je Schütze)` : p.arrows],
+      [alt ? 'Schießzeit je Team' : 'Schießzeit', fmtSec(p.shoot)],
+      ...(alt ? [['Wechsel nach', `${p.perTurn} Pfeilen`]] : []),
+      ['Vorbereitung (rot)', fmtSec(p.prep)],
+      ['Gelb ab Restzeit', fmtSec(p.warn)],
+      ['Shoot-off', `${p.soArrows} Pfeil${p.soArrows > 1 ? 'e' : ''} in ${fmtSec(p.soShoot)}${alt ? ' je Team' : ''}`],
+    ];
     $('rules').innerHTML = rows.map(([t, v]) => `<div class="row"><div class="t">${t}</div><div class="v">${v}</div></div>`).join('');
     document.querySelectorAll('#presetSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === S.preset));
     document.querySelectorAll('#modeSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === S.mode));
     $('modeBox').classList.toggle('hidden', !isTeam);
     $('modeHint').textContent = alt
       ? `Wie im Finale: Team A schießt ${p.perTurn} Pfeile, dann Team B – jedes Team hat seine eigene Uhr mit ${fmtSec(p.shoot)}.`
-      : `Beide Teams schießen gleichzeitig auf ihre Scheiben.`;
+      : `Beide Teams schießen gleichzeitig.`;
   }
 
   document.querySelectorAll('#presetSeg button').forEach(b => b.addEventListener('click', () => { S.preset = b.dataset.v; save(); renderSetup(); }));
@@ -326,24 +312,28 @@
   function releaseAwake() { try { wakeLock && wakeLock.release(); } catch (e) {} wakeLock = null; }
 
   // ------------------------------------------------------------------
-  // Ablauf
+  // Ablauf einer Runde
   // ------------------------------------------------------------------
-  // Gleichzeitig:  walkup (rot) -> shoot (grün/gelb) -> collect -> ... -> done [-> Stechen]
-  // Abwechselnd:   ready (wer beginnt?) -> walkup -> alt (zwei Uhren) -> collect/ready -> ... -> done [-> Stechen]
+  // 2× Signal -> rot (Vorbereitung) -> 1× Signal -> grün/gelb (Schießzeit) -> 3× Signal -> Pfeile holen
+  // Abwechselnd: statt einer Uhr zwei Team-Uhren, "Wechsel" nach jedem Durchgang
   let R = null;
   const now = () => Date.now();
-  const totalEnds = () => R.cfg.practice + R.cfg.ends;
-  const shootTime = () => R.shootoff ? R.cfg.soShoot : R.cfg.shoot;
-  const arrowsNow = () => R.shootoff ? R.cfg.soArrows : R.cfg.arrows;
   const other = (t) => t === 'A' ? 'B' : 'A';
 
-  function startRun() {
+  function startRun(shootoff) {
     unlockAudio();
     keepAwake();
-    R = { cfg: config(), endIdx: 0, phase: null, phaseEnd: null, remaining: 0, paused: false, shootoff: false, alt: null };
+    const cfg = config();
+    if (shootoff) { cfg.so = true; cfg.arrows = cfg.soArrows; cfg.shoot = cfg.soShoot; cfg.perTurn = cfg.soArrows; }
+    R = { cfg, phase: null, phaseEnd: null, remaining: 0, paused: false, alt: null };
+    if (R.cfg.alt) {
+      const turns = R.cfg.arrows / R.cfg.perTurn;
+      R.alt = { turn: 'A', clocks: { A: R.cfg.shoot * 1000, B: R.cfg.shoot * 1000 }, turnsLeft: { A: turns, B: turns } };
+    }
     $('setup').classList.add('hidden');
     $('timer').classList.remove('hidden');
-    if (R.cfg.alt) setPhase('ready', null); else startWalkup();
+    horn(2);
+    setPhase('walkup', R.cfg.prep);
     loop();
   }
 
@@ -354,27 +344,10 @@
     render();
   }
 
-  function startWalkup() {
-    horn(2);
-    setPhase('walkup', R.cfg.prep);
-  }
-
   function startShoot() {
     horn(1);
-    if (R.cfg.alt) {
-      R.phase = 'alt'; R.paused = false;
-      R.phaseEnd = now() + R.alt.clocks[R.alt.turn];
-      render();
-    } else {
-      setPhase('shoot', shootTime());
-    }
-  }
-
-  // Abwechselnd: Startteam wählen und Satz vorbereiten
-  function pickStarter(team) {
-    const turns = arrowsNow() / R.cfg.perTurn;
-    R.alt = { turn: team, clocks: { A: shootTime() * 1000, B: shootTime() * 1000 }, turnsLeft: { A: turns, B: turns } };
-    startWalkup();
+    if (R.cfg.alt) setPhase('alt', R.alt.clocks[R.alt.turn] / 1000);
+    else setPhase('shoot', R.cfg.shoot);
   }
 
   // Abwechselnd: Team ist fertig (oder Zeit abgelaufen) -> anderes Team
@@ -384,9 +357,7 @@
     a.turnsLeft[t] = (timeout || a.clocks[t] <= 0) ? 0 : a.turnsLeft[t] - 1;
     const o = other(t);
     if (a.clocks[o] <= 0) a.turnsLeft[o] = 0;
-    let next = null;
-    if (a.turnsLeft[o] > 0) next = o;
-    else if (a.turnsLeft[t] > 0) next = t;
+    const next = a.turnsLeft[o] > 0 ? o : (a.turnsLeft[t] > 0 ? t : null);
     if (!next) { endShoot(); return; }
     a.turn = next;
     R.paused = false;
@@ -396,16 +367,8 @@
 
   function endShoot() {
     horn(3);
-    if (R.shootoff || R.endIdx >= totalEnds() - 1) { setPhase('done', null); return; }
-    if (R.cfg.alt) setPhase('ready', null); else setPhase('collect', null);
-  }
-
-  function nextEnd() { R.endIdx++; startWalkup(); }
-
-  function startShootoff() {
-    R.shootoff = true;
-    keepAwake();
-    if (R.cfg.alt) setPhase('ready', null); else startWalkup();
+    releaseAwake();
+    setPhase('collect', null);
   }
 
   function advance() {
@@ -447,67 +410,30 @@
     const c = R.cfg;
     const remMs = R.paused ? R.remaining : (R.phaseEnd == null ? 0 : Math.max(0, R.phaseEnd - now()));
     const secs = Math.ceil(remMs / 1000);
-    const isTeam = c.kind === 'team';
-    const isPractice = R.endIdx < c.practice;
-    const unit = isTeam ? 'Satz' : (isPractice ? 'Probepasse' : 'Passe');
-    const num = isPractice ? R.endIdx + 1 : R.endIdx - c.practice + 1;
-    const of = isPractice ? c.practice : c.ends;
 
     let visPhase = R.phase;
     if (R.phase === 'shoot' && c.warn > 0 && remMs <= c.warn * 1000) visPhase = 'warn';
 
     let phaseLabel = '', phaseSub = '', big = String(secs);
-    const nextUnit = () => {
-      if (isTeam) return R.shootoff ? 'Stechen' : `Satz ${R.endIdx + 2}`;
-      const nIsPr = R.endIdx + 1 < c.practice;
-      return `${nIsPr ? 'Probepasse' : 'Passe'} ${nIsPr ? R.endIdx + 2 : R.endIdx + 2 - c.practice}`;
-    };
-
     switch (R.phase) {
       case 'walkup':
         phaseLabel = 'Zur Schießlinie';
-        if (c.alt) phaseSub = `Team ${R.alt.turn} beginnt`;
+        if (c.alt) phaseSub = 'Team A beginnt';
         break;
       case 'shoot':
-        phaseLabel = `Schießen – ${arrowsNow()} Pfeil${arrowsNow() > 1 ? 'e' : ''}`;
+        phaseLabel = `Schießen – ${c.arrows} Pfeil${c.arrows > 1 ? 'e' : ''}`;
         break;
       case 'collect':
-        phaseLabel = isTeam ? 'Pfeile holen & Satzpunkte' : 'Pfeile holen & werten';
-        phaseSub = `Als Nächstes: ${nextUnit()}`;
+        phaseLabel = 'Pfeile holen';
         big = '🏹';
-        break;
-      case 'ready':
-        if (R.shootoff) { phaseLabel = 'Stechen'; phaseSub = 'Wer beginnt?'; }
-        else if (R.endIdx === 0 && !R.alt) { phaseLabel = 'Wer beginnt?'; phaseSub = 'Satz 1'; }
-        else { phaseLabel = 'Pfeile holen & Satzpunkte'; phaseSub = `${nextUnit()} – wer beginnt?`; }
-        big = '🏹';
-        break;
-      case 'done':
-        phaseLabel = R.shootoff ? 'Stechen beendet' : 'Fertig!';
-        phaseSub = isTeam
-          ? (R.shootoff ? '' : 'Unentschieden? Dann Stechen.')
-          : `${c.ends} Passen · ${c.ends * c.arrows} Wertungspfeile`;
-        big = '🎯';
         break;
     }
 
     const t = $('timer');
-    t.dataset.phase = visPhase;
+    t.dataset.phase = visPhase === 'collect' ? 'collect' : visPhase;
     t.classList.toggle('paused', R.paused);
+    $('endLabel').textContent = c.name + (c.so ? ' · Shoot-off' : '') + (c.alt ? ' · abwechselnd' : '');
 
-    // Kopfzeile
-    let endLabel;
-    if (R.phase === 'done') endLabel = isTeam ? 'Match beendet' : 'Durchgang beendet';
-    else if (R.shootoff) endLabel = 'Stechen';
-    else if (R.phase === 'ready' && R.alt) endLabel = `${unit} ${num} / ${of} beendet`;
-    else endLabel = `${unit} ${num} / ${of}`;
-    $('endLabel').textContent = endLabel;
-    let endSub = '';
-    if (!isTeam && !isPractice && c.practice && R.phase !== 'done') endSub = `insgesamt ${R.endIdx + 1} / ${totalEnds()}`;
-    if (c.alt && R.phase === 'alt') endSub = `${arrowsNow()} Pfeile je Team · Wechsel nach ${R.shootoff ? 1 : c.perTurn}`;
-    $('endSub').textContent = endSub;
-
-    // Ansicht: eine große Zahl oder zwei Uhren
     const showClocks = R.phase === 'alt';
     $('singleView').classList.toggle('hidden', showClocks);
     $('altView').classList.toggle('hidden', !showClocks);
@@ -518,16 +444,11 @@
         const el = $('clock' + team);
         const active = a.turn === team;
         const ms = active ? remMs : a.clocks[team];
-        const s = Math.ceil(ms / 1000);
         el.classList.toggle('on', active);
         el.classList.toggle('warn', active && c.warn > 0 && ms <= c.warn * 1000);
         el.classList.toggle('out', !active && a.turnsLeft[team] === 0);
-        el.querySelector('.num').textContent = s;
-        let info = '';
-        if (active) info = R.paused ? 'PAUSE' : 'schießt';
-        else if (a.turnsLeft[team] === 0) info = 'fertig';
-        else info = 'wartet';
-        el.querySelector('.info').textContent = info;
+        el.querySelector('.num').textContent = Math.ceil(ms / 1000);
+        el.querySelector('.info').textContent = active ? (R.paused ? 'PAUSE' : 'schießt') : (a.turnsLeft[team] === 0 ? 'fertig' : 'wartet');
       });
     } else {
       $('phaseLabel').textContent = phaseLabel;
@@ -539,42 +460,33 @@
     // Buttons
     const show = (id, on) => $(id).classList.toggle('hidden', !on);
     const timed = R.phaseEnd != null || R.paused;
-    show('pauseBtn', timed && R.phase !== 'done');
+    const collect = R.phase === 'collect';
+    show('pauseBtn', timed);
     $('pauseBtn').textContent = R.paused ? 'Weiter' : 'Pause';
     show('skipBtn', R.phase === 'shoot' || R.phase === 'walkup');
     $('skipBtn').textContent = R.phase === 'walkup' ? 'Sofort los' : 'Alle fertig';
-    show('stopBtn', R.phase !== 'done');
-    // ohne mittleren Knopf: Pause und Beenden je halbe Breite
+    show('switchBtn', R.phase === 'alt' && !R.paused);
+    show('againBtn', collect);
+    $('stopBtn').textContent = collect ? 'Zurück' : 'Beenden';
     const twoUp = $('skipBtn').classList.contains('hidden');
     $('pauseBtn').classList.toggle('half', twoUp && timed);
     $('stopBtn').classList.toggle('half', twoUp && timed);
-    $('stopBtn').classList.toggle('wide', twoUp && !timed);
-    show('switchBtn', R.phase === 'alt' && !R.paused);
-    show('pickA', R.phase === 'ready');
-    show('pickB', R.phase === 'ready');
-    show('nextBtn', R.phase === 'collect' || R.phase === 'done');
-    $('nextBtn').textContent = R.phase === 'done' ? 'Zurück zum Start' : `${nextUnit()} ▶`;
-    $('nextBtn').classList.toggle('primary', R.phase !== 'done' || !isTeam || R.shootoff);
-    show('soBtn', R.phase === 'done' && isTeam && !R.shootoff);
+    $('stopBtn').classList.toggle('wide', !timed);
   }
 
-  $('startBtn').addEventListener('click', startRun);
+  $('startBtn').addEventListener('click', () => startRun(false));
+  $('soStartBtn').addEventListener('click', () => startRun(true));
+  $('againBtn').addEventListener('click', () => startRun(R && R.cfg.so));
   $('pauseBtn').addEventListener('click', togglePause);
   $('skipBtn').addEventListener('click', () => { if (!R) return; if (R.phase === 'walkup') startShoot(); else if (R.phase === 'shoot') endShoot(); });
   $('switchBtn').addEventListener('click', () => { if (R && R.phase === 'alt' && !R.paused) switchTurn(false); });
-  const pick = (team) => () => {
-    if (!R || R.phase !== 'ready') return;
-    if (R.alt && !R.shootoff) R.endIdx++;   // nach einem Satz: nächster Satz
-    pickStarter(team);
-  };
-  $('pickA').addEventListener('click', pick('A'));
-  $('pickB').addEventListener('click', pick('B'));
-  $('nextBtn').addEventListener('click', () => { if (!R) return; if (R.phase === 'done') stopRun(); else nextEnd(); });
-  $('soBtn').addEventListener('click', () => { if (R && R.phase === 'done') startShootoff(); });
-  $('stopBtn').addEventListener('click', () => { if (confirm('Durchgang wirklich beenden?')) stopRun(); });
+  $('stopBtn').addEventListener('click', () => {
+    if (!R) return;
+    if (R.phase === 'collect' || confirm('Runde wirklich abbrechen?')) stopRun();
+  });
 
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && R) { keepAwake(); if (ctx && ctx.state !== 'running') ctx.resume(); render(); }
+    if (document.visibilityState === 'visible' && R) { if (R.phase !== 'collect') keepAwake(); if (ctx && ctx.state !== 'running') ctx.resume(); render(); }
   });
 
   renderSetup();
@@ -589,7 +501,7 @@
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); });
       }).catch(() => {});
     });
-    // Neue Version installiert -> neu laden (aber nie mitten im Durchgang)
+    // Neue Version installiert -> neu laden (aber nie mitten in einer Runde)
     let hadController = !!navigator.serviceWorker.controller, pendingReload = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (!hadController) { hadController = true; return; }
