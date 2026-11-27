@@ -1,16 +1,16 @@
-# Bogen-Timer
+# Archery Timer
 
-Offline-Web-App für das iPhone: spielt eine Runde nach World-Archery-Ablauf ab –
-Start drücken, Signale und Timer laufen, danach Pfeile holen und bei Bedarf „Nochmal“.
+Offline web app for iPhone that plays one round of the World Archery shooting sequence:
+press Start, signals and timer run, collect arrows, press “Again” if you want another round.
 
-| | Pfeile | Schießzeit | Shoot-off |
+| Event | Arrows | Shooting time | Shoot-off |
 |---|---|---|---|
-| Halle 18 m | 3 | 2 min | 1 Pfeil / 40 s |
-| Freiluft | 6 | 4 min | 1 Pfeil / 40 s |
-| Team (3er) | 6 | 2 min | 3 Pfeile / 1 min |
-| Mixed (2er) | 4 | 80 s | 2 Pfeile / 40 s |
+| Indoor 18 m | 3 | 2 min | 1 arrow / 40 s |
+| Outdoor | 6 | 4 min | 1 arrow / 40 s |
+| Team (3) | 6 | 2 min | 3 arrows / 1 min |
+| Mixed (2) | 4 | 80 s | 2 arrows / 40 s |
 
-Team und Mixed gleichzeitig oder abwechselnd (zwei Uhren, wie im Finale).
-Signalhorn 2× / 1× / 3×, 10 s Vorbereitung (rot), gelb ab 30 s Restzeit.
+Team and mixed: simultaneous or alternating (two clocks, like in finals).
+Signals 2× / 1× / 3×, 10 s preparation (red), yellow at 30 s left.
 
-Installation: Seite in Safari öffnen → ••• → Teilen → „Zum Home-Bildschirm“.
+Install: open in Safari → ••• → Share → “Add to Home Screen”.

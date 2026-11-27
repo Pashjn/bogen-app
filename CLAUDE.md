@@ -1,12 +1,20 @@
-# Bogen-Timer – Hinweise für Claude
+# Archery Timer (Repo: bogen-app) – Hinweise für Claude
 
-- Reine statische Web-App (index.html, sw.js, manifest, icons), gehostet über GitHub Pages
-  auf https://pashjn.github.io/bogen-app/ (Branch `main`, Root).
-- Sprache der App und der Kommunikation: Deutsch. Nutzer ist kein Entwickler – einfach erklären.
+- Reine statische Web-App (index.html, sw.js, manifest, icons, version.json), gehostet über
+  GitHub Pages auf https://pashjn.github.io/bogen-app/ (Branch `main`, Root).
+- **App-Texte auf Englisch.** Kommunikation mit dem Nutzer auf Deutsch. Nutzer ist kein
+  Entwickler – einfach erklären.
 - Regeln sind fest nach World Archery, nicht vom Nutzer einstellbar. Keine Passen-/Satzzählung,
-  kein AB/CD. Nur: Disziplin wählen, Start / Shoot-off, Signale + Timer, „Nochmal“.
+  kein AB/CD. Nur: Disziplin wählen, Start / Shoot-off, Signale + Timer, „Again“.
 
-## Bei JEDER Änderung Version erhöhen (sonst kommt das Update nicht aufs iPhone)
-1. `APP_VERSION` in index.html (+ Text in `#versionLabel`)
-2. `version.json`
-3. `VERSION` in sw.js
+## Versionen
+Angezeigte Version: `alpha v1.0`, dann `alpha v1.1`, `alpha v1.2`, … (Nutzer-Vorgabe).
+Intern gibt es zusätzlich eine ganzzahlige Build-Nummer für das Auto-Update.
+
+Bei JEDER Änderung, die aufs iPhone soll:
+1. index.html: `APP_VERSION` (Build) +1 und `APP_LABEL` auf die nächste Version (v1.1 …)
+2. version.json: `version` = neuer Build, `label` = neues Label
+3. sw.js: `VERSION` = 'b<Build>'
+
+Die App vergleicht beim Start `version.json.version` mit `APP_VERSION` und lädt sich neu,
+wenn der Server höher ist (nie während einer laufenden Runde).

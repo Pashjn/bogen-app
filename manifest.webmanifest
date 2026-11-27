@@ -1,8 +1,8 @@
 {
-  "name": "Bogen-Timer",
-  "short_name": "Bogen-Timer",
-  "description": "Schießablauf nach World Archery mit Signalen, Ampel und Countdown",
-  "lang": "de",
+  "name": "Archery Timer",
+  "short_name": "Archery Timer",
+  "description": "World Archery shooting sequence with signals, lights and countdown",
+  "lang": "en",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

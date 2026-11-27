@@ -1,14 +1,14 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Bogen-Timer</title>
+<title>Archery Timer</title>
 <meta name="theme-color" content="#111418">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Bogen-Timer">
+<meta name="apple-mobile-web-app-title" content="Archery Timer">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-192.png">
@@ -139,40 +139,40 @@
 
 <!-- ================= EINSTELLUNGEN ================= -->
 <main id="setup">
-  <h1><img src="icons/icon-180.png" alt="">Bogen-Timer</h1>
-  <p class="sub">Schießablauf nach World Archery – mit Signalen, Ampel und Countdown.</p>
+  <h1><img src="icons/icon-180.png" alt="">Archery Timer</h1>
+  <p class="sub">World Archery shooting sequence – with signals, lights and countdown.</p>
 
-  <div class="label">Wettkampf</div>
+  <div class="label">Event</div>
   <div class="seg grid2" id="presetSeg">
-    <button data-v="indoor">Halle 18 m</button>
-    <button data-v="outdoor">Freiluft</button>
-    <button data-v="team">Team (3er)</button>
-    <button data-v="mixed">Mixed (2er)</button>
+    <button data-v="indoor">Indoor 18 m</button>
+    <button data-v="outdoor">Outdoor</button>
+    <button data-v="team">Team (3)</button>
+    <button data-v="mixed">Mixed (2)</button>
   </div>
 
   <div id="modeBox">
-    <div class="label">Ablauf</div>
+    <div class="label">Shooting order</div>
     <div class="seg" id="modeSeg">
-      <button data-v="sim">Gleichzeitig</button>
-      <button data-v="alt">Abwechselnd</button>
+      <button data-v="sim">Simultaneous</button>
+      <button data-v="alt">Alternating</button>
     </div>
     <p class="seg-hint" id="modeHint"></p>
   </div>
 
-  <div class="label">Regeln (World Archery)</div>
+  <div class="label">Rules (World Archery)</div>
   <div class="card" id="rules"></div>
 
   <button class="btn-start" id="startBtn">▶ Start</button>
   <button class="btn-so" id="soStartBtn">🎯 Shoot-off</button>
-  <button class="btn-ghost" id="testBtn">🔊 Signal testen</button>
+  <button class="btn-ghost" id="testBtn">🔊 Test signal</button>
 
   <p class="tip">
-    <b>Signale:</b> 2× = zur Schießlinie · 1× = Schießen · 3× = Pfeile holen.<br>
-    Der Bildschirm bleibt während der Runde an. Lautstärke mit den iPhone-Tasten regeln.
-    Funktioniert komplett ohne Internet.
+    <b>Signals:</b> 2× = walk to the line · 1× = start shooting · 3× = collect arrows.<br>
+    The screen stays on during a round. Use the iPhone volume buttons to adjust the volume.
+    Works completely offline.
   </p>
-  <p class="tip" style="opacity:.6" id="versionLabel">Version 6</p>
-  <div id="updateNote" class="update-note hidden">Neue Version wird geladen …</div>
+  <p class="tip" style="opacity:.6" id="versionLabel">alpha v1.0</p>
+  <div id="updateNote" class="update-note hidden">Loading new version …</div>
 </main>
 
 <!-- ================= TIMER ================= -->
@@ -184,7 +184,7 @@
   <div class="mid" id="singleView">
     <div class="phase" id="phaseLabel"></div>
     <div class="big" id="bigNum"></div>
-    <div class="paused-tag hidden" id="pausedTag">PAUSE</div>
+    <div class="paused-tag hidden" id="pausedTag">PAUSED</div>
     <div class="phase-sub" id="phaseSub"></div>
   </div>
 
@@ -194,11 +194,11 @@
   </div>
 
   <div class="controls">
-    <button class="wide primary hidden" id="switchBtn">Wechsel ▶</button>
-    <button class="wide primary hidden" id="againBtn">▶ Nochmal</button>
+    <button class="wide primary hidden" id="switchBtn">Switch ▶</button>
+    <button class="wide primary hidden" id="againBtn">▶ Again</button>
     <button id="pauseBtn">Pause</button>
-    <button id="skipBtn">Alle fertig</button>
-    <button id="stopBtn">Beenden</button>
+    <button id="skipBtn">All done</button>
+    <button id="stopBtn">Stop</button>
   </div>
 </section>
 
@@ -210,15 +210,16 @@
   // Regeln (fest nach World Archery)
   // ------------------------------------------------------------------
   const PRESETS = {
-    indoor:  { name: 'Halle 18 m',  kind: 'qual', arrows: 3, shoot: 120, prep: 10, warn: 30, soArrows: 1, soShoot: 40 },
-    outdoor: { name: 'Freiluft',    kind: 'qual', arrows: 6, shoot: 240, prep: 10, warn: 30, soArrows: 1, soShoot: 40 },
+    indoor:  { name: 'Indoor 18 m',  kind: 'qual', arrows: 3, shoot: 120, prep: 10, warn: 30, soArrows: 1, soShoot: 40 },
+    outdoor: { name: 'Outdoor',    kind: 'qual', arrows: 6, shoot: 240, prep: 10, warn: 30, soArrows: 1, soShoot: 40 },
     // perTurn = Pfeile pro Durchgang beim abwechselnden Schießen
-    team:    { name: 'Team (3er)',  kind: 'team', members: 3, arrows: 6, perTurn: 3, shoot: 120, prep: 10, warn: 30, soArrows: 3, soShoot: 60 },
-    mixed:   { name: 'Mixed (2er)', kind: 'team', members: 2, arrows: 4, perTurn: 2, shoot: 80,  prep: 10, warn: 30, soArrows: 2, soShoot: 40 },
+    team:    { name: 'Team (3)',  kind: 'team', members: 3, arrows: 6, perTurn: 3, shoot: 120, prep: 10, warn: 30, soArrows: 3, soShoot: 60 },
+    mixed:   { name: 'Mixed (2)', kind: 'team', members: 2, arrows: 4, perTurn: 2, shoot: 80,  prep: 10, warn: 30, soArrows: 2, soShoot: 40 },
   };
   const DEFAULTS = { preset: 'indoor', mode: 'sim' };
   const STORE_KEY = 'bogen-timer-settings-v3';
-  const APP_VERSION = 6;   // bei jeder Änderung erhöhen (auch version.json + sw.js)
+  const APP_VERSION = 7;   // Build-Nummer: bei jeder Änderung +1 (auch version.json + sw.js)
+  const APP_LABEL = 'alpha v1.0';
 
   let S = Object.assign({}, DEFAULTS);
   try { Object.assign(S, JSON.parse(localStorage.getItem(STORE_KEY) || '{}')); } catch (e) {}
@@ -239,21 +240,21 @@
     const isTeam = p.kind === 'team';
     const alt = isTeam && S.mode === 'alt';
     const rows = [
-      ...(isTeam ? [['Schützen pro Team', p.members]] : []),
-      ['Pfeile', isTeam ? `${p.arrows} (2 je Schütze)` : p.arrows],
-      [alt ? 'Schießzeit je Team' : 'Schießzeit', fmtSec(p.shoot)],
-      ...(alt ? [['Wechsel nach', `${p.perTurn} Pfeilen`]] : []),
-      ['Vorbereitung (rot)', fmtSec(p.prep)],
-      ['Gelb ab Restzeit', fmtSec(p.warn)],
-      ['Shoot-off', `${p.soArrows} Pfeil${p.soArrows > 1 ? 'e' : ''} in ${fmtSec(p.soShoot)}${alt ? ' je Team' : ''}`],
+      ...(isTeam ? [['Archers per team', p.members]] : []),
+      ['Arrows', isTeam ? `${p.arrows} (2 per archer)` : p.arrows],
+      [alt ? 'Shooting time per team' : 'Shooting time', fmtSec(p.shoot)],
+      ...(alt ? [['Switch after', `${p.perTurn} arrows`]] : []),
+      ['Preparation (red)', fmtSec(p.prep)],
+      ['Yellow at', `${fmtSec(p.warn)} left`],
+      ['Shoot-off', `${p.soArrows} arrow${p.soArrows > 1 ? 's' : ''} in ${fmtSec(p.soShoot)}${alt ? ' per team' : ''}`],
     ];
     $('rules').innerHTML = rows.map(([t, v]) => `<div class="row"><div class="t">${t}</div><div class="v">${v}</div></div>`).join('');
     document.querySelectorAll('#presetSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === S.preset));
     document.querySelectorAll('#modeSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === S.mode));
     $('modeBox').classList.toggle('hidden', !isTeam);
     $('modeHint').textContent = alt
-      ? `Wie im Finale: Team A schießt ${p.perTurn} Pfeile, dann Team B – jedes Team hat seine eigene Uhr mit ${fmtSec(p.shoot)}.`
-      : `Beide Teams schießen gleichzeitig.`;
+      ? `Like in finals: Team A shoots ${p.perTurn} arrows, then Team B – each team has its own clock with ${fmtSec(p.shoot)}.`
+      : `Both teams shoot at the same time.`;
   }
 
   document.querySelectorAll('#presetSeg button').forEach(b => b.addEventListener('click', () => { S.preset = b.dataset.v; save(); renderSetup(); }));
@@ -420,14 +421,14 @@
     let phaseLabel = '', phaseSub = '', big = String(secs);
     switch (R.phase) {
       case 'walkup':
-        phaseLabel = 'Zur Schießlinie';
-        if (c.alt) phaseSub = 'Team A beginnt';
+        phaseLabel = 'Walk to the line';
+        if (c.alt) phaseSub = 'Team A starts';
         break;
       case 'shoot':
-        phaseLabel = `Schießen – ${c.arrows} Pfeil${c.arrows > 1 ? 'e' : ''}`;
+        phaseLabel = `Shoot – ${c.arrows} arrow${c.arrows > 1 ? 's' : ''}`;
         break;
       case 'collect':
-        phaseLabel = 'Pfeile holen';
+        phaseLabel = 'Collect arrows';
         big = '🏹';
         break;
     }
@@ -435,7 +436,7 @@
     const t = $('timer');
     t.dataset.phase = visPhase === 'collect' ? 'collect' : visPhase;
     t.classList.toggle('paused', R.paused);
-    $('endLabel').textContent = c.name + (c.so ? ' · Shoot-off' : '') + (c.alt ? ' · abwechselnd' : '');
+    $('endLabel').textContent = c.name + (c.so ? ' · Shoot-off' : '') + (c.alt ? ' · alternating' : '');
 
     const showClocks = R.phase === 'alt';
     $('singleView').classList.toggle('hidden', showClocks);
@@ -451,7 +452,7 @@
         el.classList.toggle('warn', active && c.warn > 0 && ms <= c.warn * 1000);
         el.classList.toggle('out', !active && a.turnsLeft[team] === 0);
         el.querySelector('.num').textContent = Math.ceil(ms / 1000);
-        el.querySelector('.info').textContent = active ? (R.paused ? 'PAUSE' : 'schießt') : (a.turnsLeft[team] === 0 ? 'fertig' : 'wartet');
+        el.querySelector('.info').textContent = active ? (R.paused ? 'PAUSED' : 'shooting') : (a.turnsLeft[team] === 0 ? 'done' : 'waiting');
       });
     } else {
       $('phaseLabel').textContent = phaseLabel;
@@ -465,12 +466,12 @@
     const timed = R.phaseEnd != null || R.paused;
     const collect = R.phase === 'collect';
     show('pauseBtn', timed);
-    $('pauseBtn').textContent = R.paused ? 'Weiter' : 'Pause';
+    $('pauseBtn').textContent = R.paused ? 'Resume' : 'Pause';
     show('skipBtn', R.phase === 'shoot' || R.phase === 'walkup');
-    $('skipBtn').textContent = R.phase === 'walkup' ? 'Sofort los' : 'Alle fertig';
+    $('skipBtn').textContent = R.phase === 'walkup' ? 'Start now' : 'All done';
     show('switchBtn', R.phase === 'alt' && !R.paused);
     show('againBtn', collect);
-    $('stopBtn').textContent = collect ? 'Zurück' : 'Beenden';
+    $('stopBtn').textContent = collect ? 'Back' : 'Stop';
     const twoUp = $('skipBtn').classList.contains('hidden');
     $('pauseBtn').classList.toggle('half', twoUp && timed);
     $('stopBtn').classList.toggle('half', twoUp && timed);
@@ -485,7 +486,7 @@
   $('switchBtn').addEventListener('click', () => { if (R && R.phase === 'alt' && !R.paused) switchTurn(false); });
   $('stopBtn').addEventListener('click', () => {
     if (!R) return;
-    if (R.phase === 'collect' || confirm('Runde wirklich abbrechen?')) stopRun();
+    if (R.phase === 'collect' || confirm('Stop this round?')) stopRun();
   });
 
   document.addEventListener('visibilitychange', () => {
@@ -493,6 +494,7 @@
   });
 
   renderSetup();
+  $('versionLabel').textContent = APP_LABEL;
 
   // ------------------------------------------------------------------
   // Offline-Unterstützung & automatische Updates
