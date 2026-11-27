@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Bogen-Timer</title>
+<meta name="theme-color" content="#111418">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bogen-Timer">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+  :root {
+    --bg: #111418;
+    --card: #1b2027;
+    --line: #2c333d;
+    --text: #f2f4f7;
+    --muted: #9aa4b2;
+    --accent: #f5c518;
+    --red: #d7262e;
+    --green: #17a34a;
+    --yellow: #f2c200;
+    --blue: #1f3a5f;
+    --safe-t: env(safe-area-inset-top, 0px);
+    --safe-b: env(safe-area-inset-bottom, 0px);
+    --safe-l: env(safe-area-inset-left, 0px);
+    --safe-r: env(safe-area-inset-right, 0px);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    -webkit-user-select: none; user-select: none;
+    overscroll-behavior: none;
+  }
+  button { font: inherit; color: inherit; border: 0; cursor: pointer; }
+  .hidden { display: none !important; }
+
+  /* ---------- Einstellungen ---------- */
+  #setup {
+    min-height: 100%;
+    padding: calc(var(--safe-t) + 20px) calc(var(--safe-r) + 16px) calc(var(--safe-b) + 24px) calc(var(--safe-l) + 16px);
+    max-width: 560px; margin: 0 auto;
+  }
+  h1 { font-size: 28px; margin: 4px 0 2px; display: flex; align-items: center; gap: 10px; }
+  h1 img { width: 34px; height: 34px; border-radius: 8px; }
+  .sub { color: var(--muted); margin: 0 0 20px; font-size: 15px; }
+  .label { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 22px 4px 8px; }
+  .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--card); border-radius: 12px; padding: 4px; gap: 4px; }
+  .seg button { background: transparent; padding: 11px 6px; border-radius: 9px; font-size: 15px; font-weight: 600; color: var(--muted); }
+  .seg button.on { background: var(--accent); color: #111; }
+  .card { background: var(--card); border-radius: 14px; overflow: hidden; }
+  .row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-top: 1px solid var(--line); gap: 12px; min-height: 54px; }
+  .row:first-child { border-top: 0; }
+  .row .t { font-size: 16px; }
+  .row .h { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .step { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .step button { width: 38px; height: 38px; border-radius: 10px; background: #2a313b; font-size: 22px; line-height: 1; }
+  .step button:active { background: #3a4350; }
+  .step output { min-width: 58px; text-align: center; font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .row .seg { min-width: 150px; background: #2a313b; }
+  .row .seg button { padding: 8px 8px; font-size: 14px; }
+  .summary { color: var(--muted); font-size: 14px; margin: 14px 4px 0; line-height: 1.45; }
+  .btn-start { display: block; width: 100%; margin-top: 22px; padding: 18px; border-radius: 16px; background: var(--green); font-size: 21px; font-weight: 700; color: #fff; }
+  .btn-start:active { filter: brightness(1.12); }
+  .btn-ghost { display: block; width: 100%; margin-top: 10px; padding: 14px; border-radius: 14px; background: var(--card); font-size: 16px; font-weight: 600; }
+  .tip { color: var(--muted); font-size: 13px; line-height: 1.5; margin: 18px 4px 0; }
+
+  /* ---------- Timer ---------- */
+  #timer {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    padding: calc(var(--safe-t) + 12px) calc(var(--safe-r) + 16px) calc(var(--safe-b) + 16px) calc(var(--safe-l) + 16px);
+    background: var(--blue);
+    transition: background-color .25s;
+  }
+  #timer[data-phase="walkup"] { background: var(--red); }
+  #timer[data-phase="shoot"]  { background: var(--green); }
+  #timer[data-phase="warn"]   { background: var(--yellow); color: #111; }
+  #timer[data-phase="collect"]{ background: var(--blue); }
+  #timer[data-phase="done"]   { background: var(--bg); }
+  #timer.paused .big { opacity: .45; }
+  #timer.other .big { opacity: .55; }
+
+  .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .end-info { font-size: 20px; font-weight: 700; }
+  .end-info small { display: block; font-size: 14px; font-weight: 500; opacity: .8; margin-top: 2px; }
+  .badge { font-size: 26px; font-weight: 800; padding: 4px 14px; border-radius: 12px; background: rgba(0,0,0,.25); letter-spacing: .04em; }
+  .badge.me { background: #fff; color: #111; }
+
+  .mid { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 0; }
+  .phase { font-size: clamp(22px, 6vw, 40px); font-weight: 700; }
+  .phase-sub { font-size: clamp(15px, 4vw, 22px); opacity: .85; margin-top: 4px; min-height: 1.3em; }
+  .big {
+    font-weight: 800; line-height: .95; font-variant-numeric: tabular-nums;
+    font-size: min(46vw, 52vh);
+    letter-spacing: -.03em;
+    transition: opacity .2s;
+  }
+  #timer[data-phase="collect"] .big, #timer[data-phase="done"] .big { font-size: min(30vw, 34vh); }
+  .paused-tag { font-size: 22px; font-weight: 800; letter-spacing: .2em; margin-top: 6px; }
+
+  .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .controls button { padding: 16px 6px; border-radius: 14px; background: rgba(0,0,0,.28); font-size: 16px; font-weight: 700; color: inherit; }
+  .controls button:active { background: rgba(0,0,0,.4); }
+  .controls .wide { grid-column: 1 / -1; padding: 20px; font-size: 20px; background: rgba(255,255,255,.95); color: #111; }
+  #timer[data-phase="warn"] .controls button:not(.wide) { background: rgba(0,0,0,.14); }
+
+  @media (orientation: landscape) and (max-height: 500px) {
+    .big { font-size: min(30vw, 58vh); }
+    .phase { font-size: 24px; }
+    .controls button { padding: 11px 6px; }
+    .controls .wide { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= EINSTELLUNGEN ================= -->
+<main id="setup">
+  <h1><img src="icons/icon-180.png" alt="">Bogen-Timer</h1>
+  <p class="sub">Schießablauf nach World Archery – mit Signalen, Ampel und Countdown.</p>
+
+  <div class="label">Wettkampf</div>
+  <div class="seg" id="presetSeg">
+    <button data-preset="indoor">Halle 18 m</button>
+    <button data-preset="outdoor">Freiluft</button>
+    <button data-preset="custom">Eigene</button>
+  </div>
+
+  <div class="label">Ablauf</div>
+  <div class="card">
+    <div class="row">
+      <div><div class="t">Pfeile pro Passe</div></div>
+      <div class="step" data-key="arrows" data-min="1" data-max="12" data-inc="1"><button>−</button><output></output><button>+</button></div>
+    </div>
+    <div class="row">
+      <div><div class="t">Schießzeit</div><div class="h">Grünes + gelbes Licht</div></div>
+      <div class="step" data-key="shoot" data-min="10" data-max="600" data-inc="10" data-unit="s"><button>−</button><output></output><button>+</button></div>
+    </div>
+    <div class="row">
+      <div><div class="t">Vorbereitung</div><div class="h">Rot – zur Schießlinie gehen</div></div>
+      <div class="step" data-key="prep" data-min="0" data-max="60" data-inc="5" data-unit="s"><button>−</button><output></output><button>+</button></div>
+    </div>
+    <div class="row">
+      <div><div class="t">Warnzeit</div><div class="h">Gelb ab Restzeit</div></div>
+      <div class="step" data-key="warn" data-min="0" data-max="120" data-inc="5" data-unit="s"><button>−</button><output></output><button>+</button></div>
+    </div>
+  </div>
+
+  <div class="label">Passen</div>
+  <div class="card">
+    <div class="row">
+      <div><div class="t">Probepassen</div></div>
+      <div class="step" data-key="practice" data-min="0" data-max="6" data-inc="1"><button>−</button><output></output><button>+</button></div>
+    </div>
+    <div class="row">
+      <div><div class="t">Wertungspassen</div></div>
+      <div class="step" data-key="ends" data-min="1" data-max="40" data-inc="1"><button>−</button><output></output><button>+</button></div>
+    </div>
+  </div>
+
+  <div class="label">Schießgruppen</div>
+  <div class="card">
+    <div class="row">
+      <div><div class="t">Gruppen</div><div class="h">AB/CD wechseln sich ab</div></div>
+      <div class="seg" id="groupsSeg"><button data-v="single">Eine</button><button data-v="abcd">AB / CD</button></div>
+    </div>
+    <div class="row" id="myGroupRow">
+      <div><div class="t">Meine Gruppe</div><div class="h">Wird hervorgehoben</div></div>
+      <div class="seg" id="myGroupSeg"><button data-v="AB">AB</button><button data-v="CD">CD</button></div>
+    </div>
+  </div>
+
+  <div class="label">Nach jeder Passe</div>
+  <div class="card">
+    <div class="row">
+      <div><div class="t">Nächste Passe</div><div class="h">Nach Pfeile holen &amp; werten</div></div>
+      <div class="seg" id="afterSeg"><button data-v="tap">Antippen</button><button data-v="auto">Automatisch</button></div>
+    </div>
+    <div class="row" id="afterSecRow">
+      <div><div class="t">Pause bis zur nächsten Passe</div></div>
+      <div class="step" data-key="afterSec" data-min="15" data-max="900" data-inc="15" data-unit="s"><button>−</button><output></output><button>+</button></div>
+    </div>
+  </div>
+
+  <p class="summary" id="summary"></p>
+
+  <button class="btn-start" id="startBtn">▶ Start</button>
+  <button class="btn-ghost" id="testBtn">🔊 Signal testen</button>
+
+  <p class="tip">
+    <b>Signale:</b> 2× = zur Schießlinie · 1× = Schießen · 3× = Pfeile holen.<br>
+    Der Bildschirm bleibt während des Ablaufs an. Lautstärke am iPhone hochdrehen.
+    Funktioniert komplett ohne Internet.
+  </p>
+</main>
+
+<!-- ================= TIMER ================= -->
+<section id="timer" class="hidden" data-phase="walkup">
+  <div class="top">
+    <div class="end-info"><span id="endLabel">Passe 1 / 10</span><small id="endSub"></small></div>
+    <div class="badge hidden" id="groupBadge">AB</div>
+  </div>
+  <div class="mid">
+    <div class="phase" id="phaseLabel">Zur Schießlinie</div>
+    <div class="big" id="bigNum">10</div>
+    <div class="paused-tag hidden" id="pausedTag">PAUSE</div>
+    <div class="phase-sub" id="phaseSub"></div>
+  </div>
+  <div class="controls" id="controls">
+    <button id="pauseBtn">Pause</button>
+    <button id="skipBtn">Alle fertig</button>
+    <button id="stopBtn">Beenden</button>
+    <button class="wide hidden" id="nextBtn">Nächste Passe ▶</button>
+  </div>
+</section>
+
+<script>
+(() => {
+  'use strict';
+
+  // ------------------------------------------------------------------
+  // Einstellungen
+  // ------------------------------------------------------------------
+  const PRESETS = {
+    indoor:  { arrows: 3, shoot: 120, prep: 10, warn: 30, practice: 2, ends: 20 },
+    outdoor: { arrows: 6, shoot: 240, prep: 10, warn: 30, practice: 2, ends: 12 },
+  };
+  const DEFAULTS = Object.assign({ preset: 'indoor', groups: 'single', myGroup: 'AB', after: 'tap', afterSec: 120 }, PRESETS.indoor);
+  const STORE_KEY = 'bogen-timer-settings-v1';
+
+  let S = Object.assign({}, DEFAULTS);
+  try { Object.assign(S, JSON.parse(localStorage.getItem(STORE_KEY) || '{}')); } catch (e) {}
+  const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {} };
+
+  const $ = (id) => document.getElementById(id);
+  const fmtSec = (s) => s >= 60 && s % 60 === 0 ? (s / 60) + ' min' : (s >= 60 ? Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + ' min' : s + ' s');
+
+  function detectPreset() {
+    for (const [name, p] of Object.entries(PRESETS)) {
+      if (Object.keys(p).every(k => S[k] === p[k])) return name;
+    }
+    return 'custom';
+  }
+
+  function renderSetup() {
+    document.querySelectorAll('.step').forEach(el => {
+      const k = el.dataset.key, unit = el.dataset.unit;
+      el.querySelector('output').textContent = unit === 's' ? fmtSec(S[k]) : S[k];
+    });
+    document.querySelectorAll('#presetSeg button').forEach(b => b.classList.toggle('on', b.dataset.preset === S.preset));
+    const segOn = (id, v) => document.querySelectorAll('#' + id + ' button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+    segOn('groupsSeg', S.groups);
+    segOn('myGroupSeg', S.myGroup);
+    segOn('afterSeg', S.after);
+    $('myGroupRow').classList.toggle('hidden', S.groups !== 'abcd');
+    $('afterSecRow').classList.toggle('hidden', S.after !== 'auto');
+
+    const total = S.ends * S.arrows;
+    $('summary').textContent =
+      `${S.practice ? S.practice + ' Probepasse' + (S.practice > 1 ? 'n + ' : ' + ') : ''}` +
+      `${S.ends} Passen à ${S.arrows} Pfeile = ${total} Wertungspfeile. ` +
+      `${fmtSec(S.shoot)} Schießzeit` + (S.groups === 'abcd' ? ', Gruppen AB/CD im Wechsel.' : '.');
+  }
+
+  document.querySelectorAll('.step').forEach(el => {
+    const [minus, plus] = el.querySelectorAll('button');
+    const k = el.dataset.key, min = +el.dataset.min, max = +el.dataset.max, inc = +el.dataset.inc;
+    const change = (d) => {
+      S[k] = Math.min(max, Math.max(min, S[k] + d * inc));
+      if (k in PRESETS.indoor) S.preset = detectPreset();
+      save(); renderSetup();
+    };
+    // Gedrückt halten = schnell zählen
+    [[minus, -1], [plus, 1]].forEach(([btn, d]) => {
+      let t1, t2;
+      const stop = () => { clearTimeout(t1); clearInterval(t2); };
+      btn.addEventListener('pointerdown', (e) => {
+        e.preventDefault(); change(d);
+        t1 = setTimeout(() => { t2 = setInterval(() => change(d), 90); }, 450);
+      });
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => btn.addEventListener(ev, stop));
+    });
+  });
+
+  document.querySelectorAll('#presetSeg button').forEach(b => b.addEventListener('click', () => {
+    S.preset = b.dataset.preset;
+    if (PRESETS[S.preset]) Object.assign(S, PRESETS[S.preset]);
+    save(); renderSetup();
+  }));
+  const bindSeg = (id, key) => document.querySelectorAll('#' + id + ' button').forEach(b => b.addEventListener('click', () => {
+    S[key] = b.dataset.v; save(); renderSetup();
+  }));
+  bindSeg('groupsSeg', 'groups');
+  bindSeg('myGroupSeg', 'myGroup');
+  bindSeg('afterSeg', 'after');
+
+  // ------------------------------------------------------------------
+  // Signalhorn (wird live erzeugt – keine Audiodateien, läuft offline)
+  // ------------------------------------------------------------------
+  let ctx = null, master = null;
+  function unlockAudio() {
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {} // ignoriert Lautlos-Schalter (iOS 17+)
+    if (!ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      ctx = new AC();
+      const comp = ctx.createDynamicsCompressor();
+      master = ctx.createGain();
+      master.gain.value = 0.9;
+      master.connect(comp); comp.connect(ctx.destination);
+    }
+    if (ctx.state !== 'running') ctx.resume();
+    // Kurzer stiller Ton, damit iOS den Audiokanal freigibt
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    g.gain.value = 0; o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.05);
+  }
+
+  function blast(t, dur) {
+    const out = ctx.createGain();
+    out.gain.setValueAtTime(0, t);
+    out.gain.linearRampToValueAtTime(0.55, t + 0.025);
+    out.gain.setValueAtTime(0.55, t + dur - 0.06);
+    out.gain.linearRampToValueAtTime(0, t + dur);
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 2400; lp.Q.value = 0.8;
+    lp.connect(out); out.connect(master);
+    [[392, 'sawtooth', 0.5], [494, 'sawtooth', 0.4], [196, 'square', 0.18]].forEach(([f, type, v]) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type; o.frequency.value = f; g.gain.value = v;
+      o.connect(g); g.connect(lp);
+      o.start(t); o.stop(t + dur + 0.02);
+    });
+  }
+
+  function horn(count) {
+    if (!ctx) return;
+    if (ctx.state !== 'running') ctx.resume();
+    const dur = 0.75, gap = 0.45;
+    let t = ctx.currentTime + 0.05;
+    for (let i = 0; i < count; i++) { blast(t, dur); t += dur + gap; }
+  }
+
+  $('testBtn').addEventListener('click', () => { unlockAudio(); horn(1); });
+
+  // ------------------------------------------------------------------
+  // Bildschirm anlassen
+  // ------------------------------------------------------------------
+  let wakeLock = null;
+  async function keepAwake() {
+    try { if ('wakeLock' in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); } } catch (e) {}
+  }
+  function releaseAwake() { try { wakeLock && wakeLock.release(); } catch (e) {} wakeLock = null; }
+
+  // ------------------------------------------------------------------
+  // Ablauf
+  // ------------------------------------------------------------------
+  // Phasen: walkup (rot) -> shoot (grün/gelb) -> [nächste Gruppe: walkup ...] -> collect -> nächste Passe ... -> done
+  let R = null;
+  const now = () => Date.now();
+  const totalEnds = () => R.cfg.practice + R.cfg.ends;
+  const detailsFor = (i) => R.cfg.groups === 'abcd' ? (i % 2 === 0 ? ['AB', 'CD'] : ['CD', 'AB']) : [null];
+
+  function startRun() {
+    unlockAudio();
+    keepAwake();
+    R = { cfg: Object.assign({}, S), endIdx: 0, detail: 0, phase: null, phaseEnd: null, remaining: 0, paused: false };
+    $('setup').classList.add('hidden');
+    $('timer').classList.remove('hidden');
+    startWalkup();
+    loop();
+  }
+
+  function setPhase(phase, seconds) {
+    R.phase = phase;
+    R.paused = false;
+    R.phaseEnd = seconds == null ? null : now() + seconds * 1000;
+    render();
+  }
+
+  function startWalkup() {
+    if (R.cfg.prep <= 0) { horn(2); return setTimeout(() => R && startShoot(), 2200); }
+    horn(2);
+    setPhase('walkup', R.cfg.prep);
+  }
+  function startShoot() { horn(1); setPhase('shoot', R.cfg.shoot); }
+  function endShoot() {
+    const det = detailsFor(R.endIdx);
+    if (R.detail < det.length - 1) { R.detail++; startWalkup(); return; }
+    horn(3);
+    if (R.endIdx >= totalEnds() - 1) { setPhase('done', null); releaseAwake(); return; }
+    setPhase('collect', R.cfg.after === 'auto' ? R.cfg.afterSec : null);
+  }
+  function nextEnd() { R.endIdx++; R.detail = 0; startWalkup(); }
+
+  function advance() {
+    if (R.phase === 'walkup') startShoot();
+    else if (R.phase === 'shoot') endShoot();
+    else if (R.phase === 'collect') nextEnd();
+  }
+
+  function stopRun() {
+    R = null;
+    releaseAwake();
+    $('timer').classList.add('hidden');
+    $('setup').classList.remove('hidden');
+  }
+
+  function togglePause() {
+    if (!R || R.phaseEnd == null && !R.paused) return;
+    if (R.paused) { R.paused = false; R.phaseEnd = now() + R.remaining; }
+    else { R.remaining = Math.max(0, R.phaseEnd - now()); R.paused = true; R.phaseEnd = null; }
+    render();
+  }
+
+  let loopTimer = null;
+  function loop() {
+    clearInterval(loopTimer);
+    loopTimer = setInterval(() => {
+      if (!R) return clearInterval(loopTimer);
+      if (!R.paused && R.phaseEnd != null && now() >= R.phaseEnd) advance();
+      render();
+    }, 100);
+  }
+
+  // ------------------------------------------------------------------
+  // Anzeige
+  // ------------------------------------------------------------------
+  let lastKey = '';
+  function render() {
+    if (!R) return;
+    const c = R.cfg;
+    const remMs = R.paused ? R.remaining : (R.phaseEnd == null ? 0 : Math.max(0, R.phaseEnd - now()));
+    const secs = Math.ceil(remMs / 1000);
+    const det = detailsFor(R.endIdx);
+    const group = det[R.detail];
+    const isPractice = R.endIdx < c.practice;
+    const num = isPractice ? R.endIdx + 1 : R.endIdx - c.practice + 1;
+
+    let visPhase = R.phase;
+    if (R.phase === 'shoot' && c.warn > 0 && remMs <= c.warn * 1000) visPhase = 'warn';
+
+    let phaseLabel = '', phaseSub = '', big = String(secs);
+    const other = c.groups === 'abcd' && group && group !== c.myGroup && (R.phase === 'walkup' || R.phase === 'shoot');
+
+    switch (R.phase) {
+      case 'walkup':
+        phaseLabel = other ? 'Andere Gruppe geht vor' : 'Zur Schießlinie';
+        phaseSub = group ? `Gruppe ${group}` : '';
+        break;
+      case 'shoot':
+        phaseLabel = other ? `Gruppe ${group} schießt` : `Schießen – ${c.arrows} Pfeil${c.arrows > 1 ? 'e' : ''}`;
+        break;
+      case 'collect': {
+        phaseLabel = 'Pfeile holen & werten';
+        const nextIsPractice = R.endIdx + 1 < c.practice;
+        const nextNum = nextIsPractice ? R.endIdx + 2 : R.endIdx + 2 - c.practice;
+        const nextDet = detailsFor(R.endIdx + 1);
+        phaseSub = `Als Nächstes: ${nextIsPractice ? 'Probepasse' : 'Passe'} ${nextNum}` + (nextDet[0] ? ` · ${nextDet[0]} zuerst` : '');
+        big = R.phaseEnd == null && !R.paused ? '🏹' : fmtClock(secs);
+        break;
+      }
+      case 'done':
+        phaseLabel = 'Fertig!';
+        phaseSub = `${c.ends} Passen · ${c.ends * c.arrows} Wertungspfeile`;
+        big = '🎯';
+        break;
+    }
+
+    const t = $('timer');
+    t.dataset.phase = visPhase;
+    t.classList.toggle('paused', R.paused);
+    t.classList.toggle('other', !!other);
+
+    $('endLabel').textContent = R.phase === 'done' ? 'Durchgang beendet' : `${isPractice ? 'Probepasse' : 'Passe'} ${num} / ${isPractice ? c.practice : c.ends}`;
+    $('endSub').textContent = isPractice ? '' : (c.practice ? `insgesamt ${R.endIdx + 1} / ${totalEnds()}` : '');
+    const badge = $('groupBadge');
+    badge.classList.toggle('hidden', !group || R.phase === 'collect' || R.phase === 'done');
+    badge.textContent = group || '';
+    badge.classList.toggle('me', !!group && group === c.myGroup);
+
+    $('phaseLabel').textContent = phaseLabel;
+    $('phaseSub').textContent = phaseSub;
+    $('bigNum').textContent = big;
+    $('pausedTag').classList.toggle('hidden', !R.paused);
+
+    // Buttons
+    const key = R.phase + '|' + R.paused + '|' + (R.phaseEnd == null);
+    if (key !== lastKey) {
+      lastKey = key;
+      const pauseBtn = $('pauseBtn'), skipBtn = $('skipBtn'), stopBtn = $('stopBtn'), nextBtn = $('nextBtn');
+      pauseBtn.textContent = R.paused ? 'Weiter' : 'Pause';
+      const timed = R.phaseEnd != null || R.paused;
+      pauseBtn.classList.toggle('hidden', R.phase === 'done' || !timed);
+      skipBtn.classList.toggle('hidden', R.phase !== 'shoot' && R.phase !== 'walkup');
+      skipBtn.textContent = R.phase === 'walkup' ? 'Sofort los' : 'Alle fertig';
+      nextBtn.classList.toggle('hidden', R.phase !== 'collect' && R.phase !== 'done');
+      nextBtn.textContent = R.phase === 'done' ? 'Zurück zum Start' : 'Nächste Passe ▶';
+      stopBtn.classList.toggle('hidden', R.phase === 'done');
+    }
+  }
+  const fmtClock = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+
+  $('startBtn').addEventListener('click', startRun);
+  $('pauseBtn').addEventListener('click', togglePause);
+  $('skipBtn').addEventListener('click', () => { if (!R) return; if (R.phase === 'walkup') startShoot(); else if (R.phase === 'shoot') endShoot(); });
+  $('nextBtn').addEventListener('click', () => { if (!R) return; if (R.phase === 'done') stopRun(); else nextEnd(); });
+  $('stopBtn').addEventListener('click', () => { if (confirm('Durchgang wirklich beenden?')) stopRun(); });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && R) { keepAwake(); if (ctx && ctx.state !== 'running') ctx.resume(); render(); }
+  });
+
+  renderSetup();
+
+  // Offline-Unterstützung
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+})();
+</script>
+</body>
+</html>
