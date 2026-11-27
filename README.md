@@ -1,4 +1,4 @@
-# Archery Timer
+# Simple Archery Timer
 
 Offline web app for iPhone that plays one round of the World Archery shooting sequence:
 press Start, signals and timer run, collect arrows, press “Again” if you want another round.

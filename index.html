@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Archery Timer</title>
+<title>Simple Archery Timer</title>
 <meta name="theme-color" content="#161616">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Archery Timer">
+<meta name="apple-mobile-web-app-title" content="Simple Archery Timer">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-192.png">
@@ -186,7 +186,7 @@
       <div class="lang" id="langSeg"><button data-v="en">EN</button><button data-v="de">DE</button><button data-v="fr">FR</button></div></div>
     <div class="hero-text">
       <div class="eyebrow" data-i18n="eyebrow">World Archery · Timer</div>
-      <h1>Archery Timer</h1>
+      <h1>Simple Archery Timer</h1>
       <p data-i18n="tagline">Tournament timing for training: horn, lights and countdown.</p>
     </div>
     <img class="mascot" src="img/geier-recurve.webp" alt="">
@@ -222,7 +222,7 @@
       The screen stays on during a round. Set the volume with the iPhone buttons. No internet needed.
     </p>
 
-    <div class="footer"><img src="img/club-logo.png" alt=""><span>Arrowclub Dudelange · <span data-i18n="since">since 1957</span></span><span class="ver" id="versionLabel">alpha v1.4</span></div>
+    <div class="footer"><img src="img/club-logo.png" alt=""><span>Arrowclub Dudelange · <span data-i18n="since">since 1957</span></span><span class="ver" id="versionLabel">alpha v1.5</span></div>
   </div>
   <div id="updateNote" class="update-note hidden" data-i18n="updating">Loading new version …</div>
 </main>
@@ -273,8 +273,8 @@
   };
   const DEFAULTS = { preset: 'indoor', mode: 'sim' };
   const STORE_KEY = 'bogen-timer-settings-v3';
-  const APP_VERSION = 11;   // Build-Nummer: bei jeder Änderung +1 (auch version.json + sw.js)
-  const APP_LABEL = 'alpha v1.4';
+  const APP_VERSION = 12;   // Build-Nummer: bei jeder Änderung +1 (auch version.json + sw.js)
+  const APP_LABEL = 'alpha v1.5';
 
   let S = Object.assign({}, DEFAULTS);
   try { Object.assign(S, JSON.parse(localStorage.getItem(STORE_KEY) || '{}')); } catch (e) {}

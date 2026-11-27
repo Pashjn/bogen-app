@@ -1,6 +1,6 @@
 {
-  "name": "Archery Timer",
-  "short_name": "Archery Timer",
+  "name": "Simple Archery Timer",
+  "short_name": "Simple Archery Timer",
   "description": "World Archery shooting sequence with signals, lights and countdown",
   "lang": "en",
   "start_url": "./",

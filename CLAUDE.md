@@ -1,4 +1,4 @@
-# Archery Timer (Repo: bogen-app) – Hinweise für Claude
+# Simple Archery Timer (Repo: bogen-app) – Hinweise für Claude
 
 - Reine statische Web-App (index.html, sw.js, manifest, icons, version.json), gehostet über
   GitHub Pages auf https://pashjn.github.io/bogen-app/ (Branch `main`, Root).
