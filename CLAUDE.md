@@ -18,3 +18,12 @@ Bei JEDER Änderung, die aufs iPhone soll:
 
 Die App vergleicht beim Start `version.json.version` mit `APP_VERSION` und lädt sich neu,
 wenn der Server höher ist (nie während einer laufenden Runde).
+
+## Sprachen
+App-Texte in EN / DE / FR über das `I18N`-Objekt in index.html. Neue Texte immer in allen
+drei Sprachen anlegen (Schlüssel per `T('key')` oder `data-i18n="key"`).
+
+## Später (erst wenn der Nutzer ausdrücklich OK sagt!)
+Veröffentlichung für Vereinsmitglieder: App auf https://www.arrowclub.lu/ verlinken, z. B. mit
+QR-Code, evtl. eigene Adresse wie timer.arrowclub.lu (GitHub-Pages-Custom-Domain).
+Vorher NICHTS davon umsetzen oder auf der Website ändern.
