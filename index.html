@@ -144,6 +144,7 @@
     Der Bildschirm bleibt während des Ablaufs an. Lautstärke am iPhone hochdrehen.
     Funktioniert komplett ohne Internet.
   </p>
+  <p class="tip" style="opacity:.6">Version 3</p>
 </main>
 
 <!-- ================= TIMER ================= -->
@@ -318,6 +319,7 @@
     releaseAwake();
     $('timer').classList.add('hidden');
     $('setup').classList.remove('hidden');
+    if (window.__afterStop) window.__afterStop();
   }
 
   function togglePause() {
@@ -429,7 +431,20 @@
 
   // Offline-Unterstützung
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then((reg) => {
+        reg.update().catch(() => {});
+        // Beim Zurückholen der App nach neuer Version schauen
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); });
+      }).catch(() => {});
+    });
+    // Neue Version installiert -> neu laden (aber nie mitten im Durchgang)
+    let hadController = !!navigator.serviceWorker.controller, pendingReload = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController) { hadController = true; return; }
+      if (R) pendingReload = true; else location.reload();
+    });
+    window.__afterStop = () => { if (pendingReload) location.reload(); };
   }
 })();
 </script>
